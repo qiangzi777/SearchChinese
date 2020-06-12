@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="tvSelected">#FFEB3B</color>
+    <color name="tvUnselected">#4259F436</color>
+    <color name="PinyinColor">#1b97d6</color>
+    <color name="HanziColor">#474747</color>
+</resources>
