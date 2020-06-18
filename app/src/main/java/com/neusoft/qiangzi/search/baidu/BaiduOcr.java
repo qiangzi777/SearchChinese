@@ -1,4 +1,4 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.baidu;
 
 import android.app.Activity;
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.baidu.ocr.sdk.OCR;
@@ -21,7 +22,6 @@ import com.baidu.ocr.sdk.model.IDCardResult;
 import com.baidu.ocr.sdk.model.OcrRequestParams;
 import com.baidu.ocr.sdk.model.OcrResponseResult;
 import com.baidu.ocr.sdk.model.ResponseResult;
-import com.baidu.ocr.sdk.model.WordSimple;
 import com.baidu.ocr.ui.camera.CameraActivity;
 import com.baidu.ocr.ui.camera.CameraNativeHelper;
 import com.baidu.ocr.ui.camera.CameraView;
@@ -30,7 +30,7 @@ import java.io.File;
 
 import androidx.appcompat.app.AlertDialog;
 
-public class BaiduOcr {
+public class BaiduOcr implements OnResultListener<GeneralResult>{
     private static final int REQUEST_CODE_GENERAL = 105;
     private static final int REQUEST_CODE_GENERAL_BASIC = 106;
     private static final int REQUEST_CODE_ACCURATE_BASIC = 107;
@@ -60,6 +60,7 @@ public class BaiduOcr {
     private static final String YOUR_BAIDU_SECRET_KEY = "q4BxzrTjlylaeOIfoXrAS33a0oph1vyV";
     public static final int ID_CARD_FRONT = 0;
     public static final int ID_CARD_BACK = 1;
+    private static final String TAG = "BaiduOcr";
 
     private boolean hasGotToken = false;
     private Activity context;
@@ -67,23 +68,29 @@ public class BaiduOcr {
     private AlertDialog.Builder alertDialog;
     private OnShotImageListener onImageListener;
     private OnRecgResultListener onRecgResultListener;
+    private String imgFilePath;
 
     public BaiduOcr(Activity context) {
         this.context = context;
         instance = this;
     }
 
-    public void setContext(Activity context){
-        this.context = context;
-    }
-    static public BaiduOcr getInstance() {
+    //    public void setContext(Activity context){
+//        this.context = context;
+//    }
+    static public BaiduOcr getInstance(Activity context) {
+        if (instance == null) {
+            new BaiduOcr(context);
+        } else {
+            instance.context = context;
+        }
         return instance;
     }
 
     /**
      * 用明文ak，sk初始化
      */
-    public void initAccessTokenWithAkSk() {
+    public void init() {
         OCR.getInstance(context).initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
@@ -109,7 +116,7 @@ public class BaiduOcr {
                                     default:
                                         msg = String.valueOf(errorCode);
                                 }
-                                alertText("百度OCK初始化失败", "本地质量控制初始化错误，错误原因： " + msg);
+                                alertText("初始化失败", "本地质量控制初始化错误，错误原因： " + msg);
                             }
                         });
             }
@@ -120,6 +127,11 @@ public class BaiduOcr {
                 alertText("AK，SK方式获取token失败", error.getMessage());
             }
         }, context, YOUR_BAIDU_API_KEY, YOUR_BAIDU_SECRET_KEY);
+    }
+
+    public void release(){
+        CameraNativeHelper.release();
+        OCR.getInstance(context).release();
     }
 
     // 通用文字识别
@@ -290,77 +302,69 @@ public class BaiduOcr {
         return result;
     }
 
+    private int requestCode;
     public void setImageResult(Intent data) {
 
-        int requestCode = data.getIntExtra("requestCode",0);
-        int resultCode = data.getIntExtra("resultCode",0);
+        requestCode = data.getIntExtra("requestCode", 0);
+        int resultCode = data.getIntExtra("resultCode", 0);
 
-        String filePath = FileUtil.getSaveFile(context).getAbsolutePath();
-        onImageListener.imageResult(filePath);
+        imgFilePath = FileUtil.getSaveFile(context).getAbsolutePath();
+        onImageListener.imageResult(imgFilePath);
 
-        // 识别成功回调，通用文字识别（含位置信息）
-        if (requestCode == REQUEST_CODE_GENERAL && resultCode == Activity.RESULT_OK) {
-            recGeneral(context, FileUtil.getSaveFile(context).getAbsolutePath());
+        if(resultCode != Activity.RESULT_OK){
+            Log.e(TAG, "setImageResult: resultCode is not ok.");
+            return;
         }
-
-        // 识别成功回调，通用文字识别（含位置信息高精度版）
-        if (requestCode == REQUEST_CODE_ACCURATE && resultCode == Activity.RESULT_OK) {
-            recAccurate(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-
-        // 识别成功回调，通用文字识别
-        if (requestCode == REQUEST_CODE_GENERAL_BASIC && resultCode == Activity.RESULT_OK) {
-            recGeneralBasic(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-
-        // 识别成功回调，通用文字识别（高精度版）
-        if (requestCode == REQUEST_CODE_ACCURATE_BASIC && resultCode == Activity.RESULT_OK) {
-            recAccurateBasic(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-        // 识别成功回调，通用文字识别（含生僻字版）
-        if (requestCode == REQUEST_CODE_GENERAL_ENHANCED && resultCode == Activity.RESULT_OK) {
-            recGeneralEnhanced(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-        // 识别成功回调，网络图片文字识别
-        if (requestCode == REQUEST_CODE_GENERAL_WEBIMAGE && resultCode == Activity.RESULT_OK) {
-            recWebimage(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-        // 识别成功回调，数字
-        if (requestCode == REQUEST_CODE_NUMBERS && resultCode == Activity.RESULT_OK) {
-            recNumbers(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-
-        // 识别成功回调，手写
-        if (requestCode == REQUEST_CODE_HANDWRITING && resultCode == Activity.RESULT_OK) {
-            recHandwriting(context, FileUtil.getSaveFile(context).getAbsolutePath());
-        }
-
-        if (requestCode == REQUEST_CODE_PICK_IMAGE_FRONT && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-            filePath = getRealPathFromURI(uri);
-            recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, filePath);
-        }
-
-        if (requestCode == REQUEST_CODE_PICK_IMAGE_BACK && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-            filePath = getRealPathFromURI(uri);
-            recIDCard(IDCardParams.ID_CARD_SIDE_BACK, filePath);
-        }
-
-        if (requestCode == REQUEST_CODE_CAMERA && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                String contentType = data.getStringExtra(CameraActivity.KEY_CONTENT_TYPE);
-                filePath = FileUtil.getSaveFile(context).getAbsolutePath();
-                if (!TextUtils.isEmpty(contentType)) {
-                    if (CameraActivity.CONTENT_TYPE_ID_CARD_FRONT.equals(contentType)) {
-                        recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, filePath);
-                    } else if (CameraActivity.CONTENT_TYPE_ID_CARD_BACK.equals(contentType)) {
-                        recIDCard(IDCardParams.ID_CARD_SIDE_BACK, filePath);
+        switch (requestCode){
+            case REQUEST_CODE_GENERAL:// 识别成功回调，通用文字识别（含位置信息）
+                recGeneral(context, imgFilePath);
+                break;
+            case REQUEST_CODE_ACCURATE:// 识别成功回调，通用文字识别（含位置信息高精度版）:
+                recAccurate(context, imgFilePath);
+                break;
+            case REQUEST_CODE_GENERAL_BASIC: // 识别成功回调，通用文字识别
+                recGeneralBasic(context, imgFilePath);
+                break;
+            case REQUEST_CODE_ACCURATE_BASIC: // 识别成功回调，通用文字识别（高精度版）
+                recAccurateBasic(context, imgFilePath);
+                break;
+            case REQUEST_CODE_GENERAL_ENHANCED: // 识别成功回调，通用文字识别（含生僻字版）
+                recGeneralEnhanced(context, imgFilePath);
+                break;
+            case REQUEST_CODE_GENERAL_WEBIMAGE: // 识别成功回调，网络图片文字识别
+                recWebimage(context, imgFilePath);
+                break;
+            case REQUEST_CODE_NUMBERS:// 识别成功回调，数字
+                recNumbers(context, imgFilePath);
+                break;
+            case REQUEST_CODE_HANDWRITING:// 识别成功回调，手写
+                recHandwriting(context, imgFilePath);
+                break;
+            case REQUEST_CODE_CAMERA://身份证识别，手动
+                if (data != null) {
+                    String contentType = data.getStringExtra(CameraActivity.KEY_CONTENT_TYPE);
+                    if (!TextUtils.isEmpty(contentType)) {
+                        if (CameraActivity.CONTENT_TYPE_ID_CARD_FRONT.equals(contentType)) {
+                            recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, imgFilePath);
+                        } else if (CameraActivity.CONTENT_TYPE_ID_CARD_BACK.equals(contentType)) {
+                            recIDCard(IDCardParams.ID_CARD_SIDE_BACK, imgFilePath);
+                        }
                     }
                 }
-            }
+                break;
+            case REQUEST_CODE_PICK_IMAGE_FRONT://身份证识别，自动:
+                Uri uri = data.getData();
+                imgFilePath = getRealPathFromURI(uri);
+                recIDCard(IDCardParams.ID_CARD_SIDE_FRONT, imgFilePath);
+                break;
+            case REQUEST_CODE_PICK_IMAGE_BACK: //身份证识别，自动
+                Uri uri1 = data.getData();
+                imgFilePath = getRealPathFromURI(uri1);
+                recIDCard(IDCardParams.ID_CARD_SIDE_BACK, imgFilePath);
+                break;
         }
     }
+
 
     private void recGeneral(Context ctx, String filePath) {
         GeneralParams param = new GeneralParams();
@@ -368,124 +372,41 @@ public class BaiduOcr {
         param.setVertexesLocation(true);
         param.setRecognizeGranularity(GeneralParams.GRANULARITY_SMALL);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeGeneral(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    Word word = (Word) wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeGeneral(param, this);
     }
 
+    //通用文字识别（含位置信息高精度版）
     private void recAccurate(Context ctx, String filePath) {
         GeneralParams param = new GeneralParams();
         param.setDetectDirection(true);
         param.setVertexesLocation(true);
         param.setRecognizeGranularity(GeneralParams.GRANULARITY_SMALL);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeAccurate(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    Word word = (Word) wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeAccurate(param, this);
     }
 
-    private void recAccurateBasic(Context ctx, String filePath) {
+    private void recAccurateBasic(Context ctx, final String filePath) {
         GeneralParams param = new GeneralParams();
         param.setDetectDirection(true);
         param.setVertexesLocation(true);
         param.setRecognizeGranularity(GeneralParams.GRANULARITY_SMALL);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeAccurateBasic(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    WordSimple word = wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeAccurateBasic(param, this);
     }
 
 
-    private void recGeneralBasic(Context ctx, String filePath) {
+    private void recGeneralBasic(Context ctx, final String filePath) {
         GeneralBasicParams param = new GeneralBasicParams();
         param.setDetectDirection(true);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeGeneralBasic(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    WordSimple word = wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeGeneralBasic(param, this);
     }
 
     private void recWebimage(Context ctx, String filePath) {
         GeneralBasicParams param = new GeneralBasicParams();
         param.setDetectDirection(true);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeWebimage(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    WordSimple word = wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeWebimage(param, this);
     }
 
     private void recNumbers(Context ctx, String filePath) {
@@ -495,8 +416,9 @@ public class BaiduOcr {
             @Override
             public void onResult(OcrResponseResult result) {
                 onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
+                alertText("识别结果", result.getJsonRes());
             }
+
             @Override
             public void onError(OCRError error) {
                 alertText("识别失败", error.getMessage());
@@ -511,8 +433,9 @@ public class BaiduOcr {
             @Override
             public void onResult(OcrResponseResult result) {
                 onRecgResultListener.onResult(result);
-                alertText("识别结果",result.getJsonRes());
+                alertText("识别结果", result.getJsonRes());
             }
+
             @Override
             public void onError(OCRError error) {
                 alertText("识别失败", error.getMessage());
@@ -524,23 +447,7 @@ public class BaiduOcr {
         GeneralBasicParams param = new GeneralBasicParams();
         param.setDetectDirection(true);
         param.setImageFile(new File(filePath));
-        OCR.getInstance(ctx).recognizeGeneralEnhanced(param, new OnResultListener<GeneralResult>() {
-            @Override
-            public void onResult(GeneralResult result) {
-//                StringBuilder sb = new StringBuilder();
-//                for (WordSimple wordSimple : result.getWordList()) {
-//                    WordSimple word = wordSimple;
-//                    sb.append(word.getWords());
-//                    sb.append("\n");
-//                }
-                onRecgResultListener.onResult(result);
-            }
-
-            @Override
-            public void onError(OCRError error) {
-                alertText("识别失败", error.getMessage());
-            }
-        });
+        OCR.getInstance(ctx).recognizeGeneralEnhanced(param, this);
     }
 
     private void recLottery(Context ctx, String filePath) {
@@ -551,6 +458,7 @@ public class BaiduOcr {
             public void onResult(OcrResponseResult result) {
                 onRecgResultListener.onResult(result);
             }
+
             @Override
             public void onError(OCRError error) {
                 alertText("识别失败", error.getMessage());
@@ -582,6 +490,51 @@ public class BaiduOcr {
         });
     }
 
+    @Override
+    public void onResult(GeneralResult result) {
+        onRecgResultListener.onResult(result);
+        //alertText("识别结果", result.getJsonRes());
+    }
+
+    @Override
+    public void onError(OCRError error) {
+        //免费限额已满
+        if (error.getErrorCode() == 4 ||
+                error.getErrorCode() == 17 ||
+                error.getErrorCode() == 18 ||
+                error.getErrorCode() == 19) {
+            switch (requestCode){
+                case REQUEST_CODE_GENERAL:// 识别成功回调，通用文字识别（含位置信息）
+                    alertText("识别失败", "通用带位置识别，今天免费限额已满！");
+                    requestCode = REQUEST_CODE_GENERAL_BASIC;
+                    recGeneralBasic(context, imgFilePath);//尝试调用更低级别接口
+                    break;
+                case REQUEST_CODE_ACCURATE:// 识别成功回调，通用文字识别（含位置信息高精度版）:
+                    alertText("识别失败", "高精度带位置，今天免费限额已满！");
+                    requestCode = REQUEST_CODE_ACCURATE_BASIC;
+                    recAccurateBasic(context, imgFilePath);//尝试调用更低级别接口
+                    break;
+                case REQUEST_CODE_GENERAL_BASIC: // 识别成功回调，通用文字识别
+                    alertText("识别失败", "今天所有免费限额已满，明天再用吧！");
+                    break;
+                case REQUEST_CODE_ACCURATE_BASIC: // 识别成功回调，通用文字识别（高精度版）
+                    alertText("识别失败", "高精度，今天免费限额已满！");
+                    requestCode = REQUEST_CODE_GENERAL;
+                    recGeneral(context, imgFilePath);//尝试调用更低级别接口
+                    break;
+                case REQUEST_CODE_GENERAL_ENHANCED: // 识别成功回调，通用文字识别（含生僻字版）
+                    break;
+                case REQUEST_CODE_GENERAL_WEBIMAGE: // 识别成功回调，网络图片文字识别
+                    break;
+                case REQUEST_CODE_NUMBERS:// 识别成功回调，数字
+                    break;
+                case REQUEST_CODE_HANDWRITING:// 识别成功回调，手写
+                    break;
+            }
+        }else {
+            alertText("识别失败", error.getMessage());
+        }
+    }
     public void setOnImageListener(OnShotImageListener listener) {
         onImageListener = listener;
     }

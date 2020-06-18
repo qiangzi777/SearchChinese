@@ -1,10 +1,11 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.pinyin;
 
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
 import com.baidu.ocr.sdk.model.WordSimple;
+import com.neusoft.qiangzi.search.R;
 
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
@@ -13,7 +14,7 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
-class PinyinUtils {
+public class PinyinUtils {
     public static String[] getSpellString(String character) {
         if (character != null && character.length() > 0) {
             String[] pinyin = new String[character.length()];
@@ -129,5 +130,38 @@ class PinyinUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * 判断是否为汉字
+     * @param string
+     * @return
+     */
+    public static boolean isChinese(String string) {
+        int n = 0;
+        for (int i = 0; i < string.length(); i++) {
+            n = (int) string.charAt(i);
+            if (!(19968 <= n && n < 40869)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isChinese(char c) {
+        return c >= 0x4E00 && c <= 0x9FA5;// 根据字节码判断
+    }
+    /**
+     * 1.判断字符串是否仅为数字:
+     * @param str
+     * @return
+     */
+    public static boolean isNumeric(String str) {
+        for (int i = str.length(); --i >= 0; ) {
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -1,14 +1,14 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import java.io.File;
+import com.neusoft.qiangzi.search.R;
+import com.neusoft.qiangzi.search.baidu.BaiduOcr;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,8 +20,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        baiduOcr = new BaiduOcr(this);
-        baiduOcr.initAccessTokenWithAkSk();
+        setTitle(getString(R.string.mainActivityTitle));
+        baiduOcr = BaiduOcr.getInstance(this);
+        baiduOcr.init();
         //设置获取相机图片监听器
 //        baiduOcr.setOnGotImageListener(new BaiduOcr.OnShotImageListener() {
 //            @Override
@@ -35,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        baiduOcr.setContext(this);
+        baiduOcr = BaiduOcr.getInstance(this);
     }
 
     public void onCharRecgBtnClick(View v){
-        baiduOcr.startHighAccCharActivityForResult();
+//        baiduOcr.startHighAccCharActivityForResult();
 //        baiduOcr.startCommonCharWithPosActivityForResult();
-//        baiduOcr.startHighAccCharWithPosActivityForResult();
+        baiduOcr.startHighAccCharWithPosActivityForResult();
 //        baiduOcr.startHandWrittingActivityForResult();
     }
     @Override
@@ -59,4 +60,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        baiduOcr.release();
+    }
 }

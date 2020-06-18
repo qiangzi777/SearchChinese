@@ -1,28 +1,35 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.activity;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.baidu.ocr.sdk.model.GeneralResult;
 import com.baidu.ocr.sdk.model.ResponseResult;
 import com.baidu.ocr.sdk.model.WordSimple;
+import com.neusoft.qiangzi.search.R;
+import com.neusoft.qiangzi.search.baidu.BaiduOcr;
+import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
+import com.neusoft.qiangzi.search.pinyin.SpellTextView;
+import com.neusoft.qiangzi.search.view.WarpLinearLayout;
 
 import java.io.File;
 
 public class ChineseResultActivity extends AppCompatActivity {
 
     private static final String TAG = "ChineseResultActivity";
+    private static final int MAX_DISPLAY_CHARS = 30;
     private BaiduOcr baiduOcr;
 
     private ImageView imageView;
-    private LinearLayout resultLayout;
+    private WarpLinearLayout resultLayout;
 //    private PinyinTextView pinyinTextView;
 //    private SpellTextView spellTextView;
 
@@ -31,18 +38,27 @@ public class ChineseResultActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chinese_result);
 
+        setTitle(getString(R.string.chineseResultActivityTitle));
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
         imageView = findViewById(R.id.imageView);
 //        pinyinTextView = findViewById(R.id.pinyinTextView);
 //        spellTextView = findViewById(R.id.spellTextView);
         resultLayout = findViewById(R.id.resultLayout);
 
-        baiduOcr = BaiduOcr.getInstance();
-        baiduOcr.setContext(this);
+        baiduOcr = BaiduOcr.getInstance(this);
+        if(!baiduOcr.isHasGotToken()){
+            baiduOcr.init();
+        }
         //设置获取相机图片监听器
         baiduOcr.setOnImageListener(new BaiduOcr.OnShotImageListener() {
             @Override
             public void imageResult(String fpath) {
                 //显示拍照图片
+                imageView.setImageURI(null);
                 imageView.setImageURI(Uri.fromFile(new File(fpath)));
             }
         });
@@ -53,24 +69,25 @@ public class ChineseResultActivity extends AppCompatActivity {
                 GeneralResult r = (GeneralResult)result;//通用、高精度文字识别结果
                 Log.d(TAG, "onResult: "+r.getJsonRes());
 
+                resultLayout.removeAllViews();
+
                 if(r.getWordList().size()==0){
                     Log.d(TAG, "onResult: recgnized nothing!");
-                    resultLayout.removeAllViews();
-//                    pinyinTextView.setText("");
-//                    spellTextView.setStringResource("");
                     return;
                 }
 
                 int charCount = 0;
                 for (WordSimple word : r.getWordList()) {
                     String strWord = word.getWords();
+                    Log.d(TAG, "onResult: word=" + strWord);
                     for (int i =0;i<strWord.length();i++) {
+                        if(!PinyinUtils.isChinese(strWord.charAt(i)))continue;//判断是否为汉字
                         charCount++;
-                        if(charCount>10){
+                        if(charCount>MAX_DISPLAY_CHARS){
                             Log.d(TAG, "onResult: too many chars, skip!");
                             return;
                         }
-                        Log.d(TAG, "onResult: char="+strWord.charAt(i));
+//                        Log.d(TAG, "onResult: char="+strWord.charAt(i));
                         View tv = PinyinUtils.getCharView(ChineseResultActivity.this,strWord.charAt(i));
                         tv.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -95,9 +112,9 @@ public class ChineseResultActivity extends AppCompatActivity {
     }
 
     public void onRetryShotPicBtnClick(View v){
-        baiduOcr.startHighAccCharActivityForResult();
+//        baiduOcr.startHighAccCharActivityForResult();
 //        baiduOcr.startCommonCharWithPosActivityForResult();
-//        baiduOcr.startHighAccCharWithPosActivityForResult();
+        baiduOcr.startHighAccCharWithPosActivityForResult();
 //        baiduOcr.startHandWrittingActivityForResult();
     }
 
@@ -108,5 +125,15 @@ public class ChineseResultActivity extends AppCompatActivity {
         i.putExtra("requestCode",requestCode);
         i.putExtra("resultCode",resultCode);
         baiduOcr.setImageResult(i);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:// back button
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

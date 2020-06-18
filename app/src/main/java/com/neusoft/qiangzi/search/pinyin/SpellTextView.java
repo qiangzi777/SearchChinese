@@ -1,16 +1,15 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.pinyin;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.TextView;
+
+import com.neusoft.qiangzi.search.R;
 
 @SuppressLint("AppCompatCustomView")
 public class SpellTextView extends TextView {
@@ -25,8 +24,8 @@ public class SpellTextView extends TextView {
     private int fontSizeSpell = ConvertUtils.dp2px(getContext(), getResources().getInteger(R.integer.PinyinFontSize));
     private int fontSizeChinese = ConvertUtils.dp2px(getContext(),getResources().getInteger(R.integer.HanziFontSize));
     private boolean isWrapWords = true;
-    private int colorSpell = getContext().getColor(R.color.PinyinColor);
-    private int colorChinese = getContext().getColor(R.color.HanziColor);
+    private int colorSpell = getContext().getColor(R.color.pinyinColor);
+    private int colorChinese = getContext().getColor(R.color.hanziColor);
     public SpellTextView(Context context) {
         super(context);
     }
@@ -78,7 +77,7 @@ public class SpellTextView extends TextView {
                 widthMesure += textPaintSpell.measureText(pinyin[index]);
             }
         }
-        widthMesure += textPaintChinese.getFontSpacing();
+        widthMesure += textPaintChinese.getFontSpacing()/2;
         Log.d(TAG, "getMesureWidth: w="+widthMesure);
         return (int)widthMesure;
     }

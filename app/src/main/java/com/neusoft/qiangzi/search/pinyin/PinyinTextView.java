@@ -1,4 +1,4 @@
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.pinyin;
 
 import android.content.Context;
 import android.graphics.Canvas;

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 Baidu, Inc. All Rights Reserved.
  */
-package com.neusoft.qiangzi.search;
+package com.neusoft.qiangzi.search.baidu;
 
 import android.content.Context;
 
