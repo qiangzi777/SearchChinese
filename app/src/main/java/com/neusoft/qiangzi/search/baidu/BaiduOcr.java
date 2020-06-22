@@ -494,6 +494,30 @@ public class BaiduOcr implements OnResultListener<GeneralResult>{
     public void onResult(GeneralResult result) {
         onRecgResultListener.onResult(result);
         //alertText("识别结果", result.getJsonRes());
+        switch (requestCode){
+            case REQUEST_CODE_ACCURATE_BASIC: // 识别成功回调，通用文字识别（高精度版）
+                Toast.makeText(context,"高精度文字识别成功！",Toast.LENGTH_SHORT).show();
+                break;
+            case REQUEST_CODE_GENERAL_BASIC: // 识别成功回调，通用文字识别
+                Toast.makeText(context,"通用文字识别成功！",Toast.LENGTH_SHORT).show();
+                break;
+            case REQUEST_CODE_GENERAL:// 识别成功回调，通用文字识别（含位置信息）
+                Toast.makeText(context,"通用+文字识别成功！",Toast.LENGTH_SHORT).show();
+                break;
+            case REQUEST_CODE_ACCURATE:// 识别成功回调，通用文字识别（含位置信息高精度版）:
+                Toast.makeText(context,"高精度+文字识别成功！",Toast.LENGTH_SHORT).show();
+                break;
+            case REQUEST_CODE_GENERAL_ENHANCED: // 识别成功回调，通用文字识别（含生僻字版）
+                break;
+            case REQUEST_CODE_GENERAL_WEBIMAGE: // 识别成功回调，网络图片文字识别
+                break;
+            case REQUEST_CODE_NUMBERS:// 识别成功回调，数字
+                break;
+            case REQUEST_CODE_HANDWRITING:// 识别成功回调，手写
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -504,23 +528,25 @@ public class BaiduOcr implements OnResultListener<GeneralResult>{
                 error.getErrorCode() == 18 ||
                 error.getErrorCode() == 19) {
             switch (requestCode){
-                case REQUEST_CODE_GENERAL:// 识别成功回调，通用文字识别（含位置信息）
-                    alertText("识别失败", "通用带位置识别，今天免费限额已满！");
+                case REQUEST_CODE_ACCURATE_BASIC: // 识别成功回调，通用文字识别（高精度版） 500
+//                    alertText("识别失败", "高精度，今天免费限额已满！");
+//                    Toast.makeText(context,"高精度限额已满，换通用文字识别",Toast.LENGTH_SHORT).show();
                     requestCode = REQUEST_CODE_GENERAL_BASIC;
                     recGeneralBasic(context, imgFilePath);//尝试调用更低级别接口
                     break;
-                case REQUEST_CODE_ACCURATE:// 识别成功回调，通用文字识别（含位置信息高精度版）:
-                    alertText("识别失败", "高精度带位置，今天免费限额已满！");
-                    requestCode = REQUEST_CODE_ACCURATE_BASIC;
-                    recAccurateBasic(context, imgFilePath);//尝试调用更低级别接口
-                    break;
-                case REQUEST_CODE_GENERAL_BASIC: // 识别成功回调，通用文字识别
-                    alertText("识别失败", "今天所有免费限额已满，明天再用吧！");
-                    break;
-                case REQUEST_CODE_ACCURATE_BASIC: // 识别成功回调，通用文字识别（高精度版）
-                    alertText("识别失败", "高精度，今天免费限额已满！");
+                case REQUEST_CODE_GENERAL_BASIC: // 识别成功回调，通用文字识别 50000
+//                    alertText("识别失败", "今天所有免费限额已满，明天再用吧！");
                     requestCode = REQUEST_CODE_GENERAL;
-                    recGeneral(context, imgFilePath);//尝试调用更低级别接口
+                    recGeneral(context, imgFilePath);
+                    break;
+                case REQUEST_CODE_GENERAL:// 识别成功回调，通用文字识别（含位置信息） 500
+//                    alertText("识别失败", "通用带位置识别，今天免费限额已满！");
+                    requestCode = REQUEST_CODE_ACCURATE;
+                    recAccurate(context, imgFilePath);//尝试调用更低级别接口
+                    break;
+                case REQUEST_CODE_ACCURATE:// 识别成功回调，通用文字识别（含位置信息高精度版） 50
+//                    alertText("识别失败", "高精度带位置，今天免费限额已满！");
+                    alertText("识别失败", "今天免费限额已满，明天再用吧！");
                     break;
                 case REQUEST_CODE_GENERAL_ENHANCED: // 识别成功回调，通用文字识别（含生僻字版）
                     break;

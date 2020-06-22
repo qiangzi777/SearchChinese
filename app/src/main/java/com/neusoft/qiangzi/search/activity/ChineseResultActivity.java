@@ -112,9 +112,10 @@ public class ChineseResultActivity extends AppCompatActivity {
     }
 
     public void onRetryShotPicBtnClick(View v){
-//        baiduOcr.startHighAccCharActivityForResult();
+        baiduOcr.startHighAccCharActivityForResult();
 //        baiduOcr.startCommonCharWithPosActivityForResult();
-        baiduOcr.startHighAccCharWithPosActivityForResult();
+//        baiduOcr.startCommonCharActivityForResult();
+//        baiduOcr.startHighAccCharWithPosActivityForResult();
 //        baiduOcr.startHandWrittingActivityForResult();
     }
 

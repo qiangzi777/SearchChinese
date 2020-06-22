@@ -27,7 +27,7 @@
         android:layout_marginTop="32dp"
         android:background="@drawable/button_circle_shape"
         android:drawableTop="@drawable/ic_book_black"
-        android:onClick="onCharRecgBtnClick"
+        android:onClick="onNewWordsBtnClick"
         android:text="生词本"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
