@@ -205,6 +205,9 @@ public class Camera1Control implements ICameraControl {
         if (takingPicture.get()) {
             return;
         }
+        if(parameters==null){
+            return;
+        }
         switch (displayOrientation) {
             case CameraView.ORIENTATION_PORTRAIT:
                 parameters.setRotation(90);
@@ -474,6 +477,9 @@ public class Camera1Control implements ICameraControl {
     };
 
     private void updateFlashMode(int flashMode) {
+        if(parameters==null){
+            return;
+        }
         switch (flashMode) {
             case FLASH_MODE_TORCH:
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
