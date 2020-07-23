@@ -5,7 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
-        
+
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.0'
@@ -18,9 +18,9 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url "https://kotlin.bintray.com/kotlinx/" }
         google()
         jcenter()
-        
     }
 }
 

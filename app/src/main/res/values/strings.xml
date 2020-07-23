@@ -2,5 +2,14 @@
     <string name="app_name">查字典</string>
     <string name="mainActivityTitle">查字典</string>
     <string name="chineseResultActivityTitle">查询结果</string>
+    <string name="newWordListActivityTitle">生词本</string>
     <string name="webSearchActivityTitle">详解</string>
+    <string name="BAIDU_HANYU_URL">https://hanyu.baidu.com/zici/s?wd=</string>
+    <string name="delete_selected_text">删除选中</string>
+    <string name="delete_all_text">清空所有</string>
+    <string name="sort_type_text">排序方式</string>
+    <string name="sort_add_time_text">按添加时间排序</string>
+    <string name="sort_count_text">按查看次数排序</string>
+    <string name="sort_update_time_text">按查看时间排序</string>
+    <string name="refresh_web_text">重载</string>
 </resources>

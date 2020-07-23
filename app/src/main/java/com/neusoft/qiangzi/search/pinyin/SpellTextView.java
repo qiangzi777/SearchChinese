@@ -141,6 +141,10 @@ public class SpellTextView extends TextView {
     public String getChineseString(){
         return getText().toString();
     }
+    public String getPinyinString(){
+        if(this.pinyin.length > 0) return this.pinyin[0];
+        else return "";
+    }
 
     //设置文字颜色
     public void setStringColor(int spellColor,int chineseColor) {

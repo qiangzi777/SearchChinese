@@ -15,6 +15,56 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
 public class PinyinUtils {
+
+    private static final char[][] toneCharArray = {
+            {'a', 'ā'},
+            {'a', 'á'},
+            {'a', 'ǎ'},
+            {'a', 'à'},
+            {'e', 'ē'},
+            {'e', 'é'},
+            {'e', 'ě'},
+            {'e', 'è'},
+            {'i', 'ī'},
+            {'i', 'í'},
+            {'i', 'ǐ'},
+            {'i', 'ì'},
+            {'o', 'ō'},
+            {'o', 'ó'},
+            {'o', 'ǒ'},
+            {'o', 'ò'},
+            {'u', 'ū'},
+            {'u', 'ú'},
+            {'u', 'ǔ'},
+            {'u', 'ù'},
+            {'v', 'ǜ'},
+            {'v', 'ǘ'},
+            {'v', 'ǚ'},
+            {'v', 'ǜ'},
+    };
+    public static char toneCharToChar(char c){
+        for(int i=0;i<toneCharArray.length;i++){
+            if(toneCharArray[i][1]==c)
+                return toneCharArray[i][0];
+        }
+        return c;
+    }
+    public static char charToToneChar(char c, int tone){
+        if(tone < 1 || tone > 4)return c;
+        for(int i=0;i<toneCharArray.length;i++){
+            if(toneCharArray[i][0]==c)
+                return toneCharArray[i+tone-1][1];
+        }
+        return c;
+    }
+    public static String toneStringToString(String str){
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<str.length();i++){
+            sb.append(toneCharToChar(str.charAt(i)));
+        }
+        return sb.toString();
+    }
+
     public static String[] getSpellString(String character) {
         if (character != null && character.length() > 0) {
             String[] pinyin = new String[character.length()];
@@ -138,10 +188,12 @@ public class PinyinUtils {
      * @return
      */
     public static boolean isChinese(String string) {
-        int n = 0;
+        char n = 0;
+        if(string == null || string.length()==0)
+            return false;
         for (int i = 0; i < string.length(); i++) {
-            n = (int) string.charAt(i);
-            if (!(19968 <= n && n < 40869)) {
+            n = string.charAt(i);
+            if (!isChinese(n)) {
                 return false;
             }
         }
