@@ -12,7 +12,7 @@ import androidx.room.Update;
 @Dao
 public interface NewWordDao {
 
-    @Query("SELECT * FROM newword ORDER BY update_time DESC")
+    @Query("SELECT * FROM newword ORDER BY add_time DESC")
     LiveData<List<NewWord>> getAll();
 
     @Insert
@@ -27,10 +27,14 @@ public interface NewWordDao {
     @Query("DELETE FROM newword")
     void deleteAll();
 
-    @Query("SELECT * FROM newword WHERE chinese=:chinese")
-    LiveData<List<NewWord>> findByChinese(String chinese);
+    @Query("SELECT * FROM newword WHERE chinese=:chinese LIMIT 1")
+    NewWord findByChinese(String chinese);
 
     @Query("SELECT * FROM newword WHERE pinyin_en LIKE :pinyin || '%' ORDER BY pinyin ASC")
     LiveData<List<NewWord>> findByPinyin(String pinyin);
+
+    @Query("SELECT * FROM newword WHERE chinese LIKE :chinese || '%' " +
+            "AND pinyin_en LIKE :pinyin || '%' ORDER BY pinyin ASC")
+    LiveData<List<NewWord>> searchByWordLiveData(String chinese, String pinyin);
 
 }

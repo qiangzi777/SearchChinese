@@ -2,8 +2,6 @@ package com.neusoft.qiangzi.search.activity;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -18,17 +16,12 @@ import com.baidu.ocr.sdk.model.ResponseResult;
 import com.baidu.ocr.sdk.model.WordSimple;
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.baidu.BaiduOcr;
-import com.neusoft.qiangzi.search.data.NewWord;
-import com.neusoft.qiangzi.search.data.NewWordDao;
-import com.neusoft.qiangzi.search.data.NewWordDatabase;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
-import com.neusoft.qiangzi.search.data.NewWordViewModel;
 import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 import com.neusoft.qiangzi.search.pinyin.SpellTextView;
 import com.neusoft.qiangzi.search.view.WarpLinearLayout;
 
 import java.io.File;
-import java.util.List;
 
 public class ChineseResultActivity extends AppCompatActivity {
 
@@ -38,8 +31,6 @@ public class ChineseResultActivity extends AppCompatActivity {
 
     private ImageView imageView;
     private WarpLinearLayout resultLayout;
-//    private PinyinTextView pinyinTextView;
-//    private SpellTextView spellTextView;
     private NewWordRepository repository;
 
     @Override
@@ -54,8 +45,6 @@ public class ChineseResultActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         imageView = findViewById(R.id.imageView);
-//        pinyinTextView = findViewById(R.id.pinyinTextView);
-//        spellTextView = findViewById(R.id.spellTextView);
         resultLayout = findViewById(R.id.resultLayout);
 
         repository = new NewWordRepository(this);
@@ -105,25 +94,8 @@ public class ChineseResultActivity extends AppCompatActivity {
                             public void onClick(View view) {
                                 SpellTextView tv = (SpellTextView)view;
                                 String w = tv.getChineseString();
-                                //保存生字到数据库
-                                repository.saveNewWord(w, tv.getPinyinString());
-//                                repository.findNewWordsByChinese(w).observe(ChineseResultActivity.this, new Observer<List<NewWord>>() {
-//                                    @Override
-//                                    public void onChanged(List<NewWord> newWords) {
-//                                        NewWord newWord = (newWords==null || newWords.size()==0)?null:newWords.get(0);
-//                                        if(newWord == null){
-//                                            newWord = new NewWord();
-//                                            newWord.chinese = w;
-//                                            newWord.pinyin = tv.getPinyinString();
-//                                            newWord.pinyinEnglish = PinyinUtils.toneStringToString(newWord.pinyin);
-//                                            repository.insertNewWords(newWord);
-//                                        }else{
-//                                            newWord.counter++;
-//                                            newWord.setUpdateTimeToNow();
-//                                            repository.updateNewWords(newWord);
-//                                        }
-//                                    }
-//                                });
+                                /* 保存生字到数据库 */
+                                repository.saveNewWord(w);
 
                                 /* 打开百度汉语 */
                                 Intent i = new Intent(ChineseResultActivity.this,WebSearchActivity.class);
@@ -134,10 +106,6 @@ public class ChineseResultActivity extends AppCompatActivity {
                         resultLayout.addView(tv);
                     }
                 }
-//                Word word = (Word) r.getWordList().get(0);
-//                pinyinTextView.setPinyin(PinyinUtils.getPinyinString(word.getWords()));
-//                pinyinTextView.setHanzi(PinyinUtils.getFormatHanzi(word.getWords()));
-//                spellTextView.setStringResource(word.getWords());
             }
         });
         baiduOcr.setImageResult(getIntent());

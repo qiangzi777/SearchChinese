@@ -66,4 +66,12 @@ public class NewWord {
             return format.format(new Date(0));
         }
     }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(chinese);
+        sb.append(" ").append(pinyin);
+        sb.append(" c=").append(counter);
+        return sb.toString();
+    }
 }

@@ -38,10 +38,14 @@ public class NewWordViewModel extends ViewModel {
         newWordRepository.deleteAllNewWords();
     }
 
-    public LiveData<List<NewWord>> findNewWordByChinese(String chinese){
-        return newWordRepository.findNewWordByChinese(chinese);
+    public LiveData<List<NewWord>> searchBy(){
+        return newWordRepository.searchBy();
     }
-    public LiveData<List<NewWord>> findNewWordsByPinyin(String pinyin){
-        return newWordRepository.findNewWordsByPinyin(pinyin);
+
+    public void setFilter(String chinese, String pinyin){
+        newWordRepository.setFilter(chinese,pinyin);
+    }
+    public void setFilter(String s){
+        newWordRepository.setFilter(s);
     }
 }

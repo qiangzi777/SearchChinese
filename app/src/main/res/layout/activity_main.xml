@@ -14,7 +14,7 @@
         android:background="@drawable/button_circle_shape"
         android:drawableTop="@drawable/ic_search_black"
         android:onClick="onCharRecgBtnClick"
-        android:text="查汉字"
+        android:text="扫描汉字"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

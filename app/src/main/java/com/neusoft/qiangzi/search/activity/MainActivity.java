@@ -1,7 +1,6 @@
 package com.neusoft.qiangzi.search.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.MenuItemCompat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.baidu.BaiduOcr;
@@ -91,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String s) {
                 /* 保存生字到数据库 */
                 if(s != null && s.length()==1 && PinyinUtils.isChinese(s)){
-                    repository.saveNewWord(s, PinyinUtils.getPinyinString(s)[0]);
+                    repository.saveNewWord(s);
                 }
 
                 /* 打开百度汉语 */

@@ -13,12 +13,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.data.NewWord;
 import com.neusoft.qiangzi.search.data.NewWordViewModel;
-import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -50,13 +51,14 @@ public class NewWordListActivity extends AppCompatActivity {
                 return (T) new NewWordViewModel(getApplication());
             }
         }).get(NewWordViewModel.class);
-        recyclerViewAdapter = new RecyclerViewAdapter();
+        recyclerViewAdapter = new RecyclerViewAdapter(viewModel);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(recyclerViewAdapter);
 
         viewModel.getAllNewWords().observe(this, new Observer<List<NewWord>>() {
             @Override
             public void onChanged(List<NewWord> newWords) {
+                Log.d(TAG, "getAllNewWords:onChanged");
                 updateRecyclerViewData(newWords);
             }
         });
@@ -67,16 +69,28 @@ public class NewWordListActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.new_word_list_menu, menu);
         MenuItem menuItem = menu.findItem(R.id.menu_search_new_word);
         SearchView searchView = (SearchView) menuItem.getActionView();
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewModel.searchBy().observe(NewWordListActivity.this, new Observer<List<NewWord>>() {
+                    @Override
+                    public void onChanged(List<NewWord> newWords) {
+                        Log.d(TAG, "searchBy:onChanged");
+                        updateRecyclerViewData(newWords);
+                    }
+                });
+            }
+        });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                searchNewWords(s);
+                viewModel.setFilter(s);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
-                searchNewWords(s);
+                viewModel.setFilter(s);
                 return false;
             }
         });
@@ -87,6 +101,7 @@ public class NewWordListActivity extends AppCompatActivity {
                 viewModel.getAllNewWords().observe(NewWordListActivity.this, new Observer<List<NewWord>>() {
                     @Override
                     public void onChanged(List<NewWord> newWords) {
+                        Log.d(TAG, "getAllNewWords:onChanged");
                         updateRecyclerViewData(newWords);
                     }
                 });
@@ -100,23 +115,7 @@ public class NewWordListActivity extends AppCompatActivity {
         recyclerViewAdapter.setAllNewWords(newWords);
         recyclerViewAdapter.notifyDataSetChanged();
     }
-    private void searchNewWords(String s){
-        if(PinyinUtils.isChinese(s)){
-            viewModel.findNewWordByChinese(s).observe(NewWordListActivity.this, new Observer<List<NewWord>>() {
-                @Override
-                public void onChanged(List<NewWord> newWords) {
-                    updateRecyclerViewData(newWords);
-                }
-            });
-        }else {
-            viewModel.findNewWordsByPinyin(s).observe(NewWordListActivity.this, new Observer<List<NewWord>>() {
-                @Override
-                public void onChanged(List<NewWord> newWords) {
-                    updateRecyclerViewData(newWords);
-                }
-            });
-        }
-    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -124,10 +123,14 @@ public class NewWordListActivity extends AppCompatActivity {
                 this.finish();
                 return true;
             case R.id.menu_delete_selected:
+                break;
             case R.id.menu_delete_all:
+                viewModel.deleteAllNewWords();
+                break;
             case R.id.menu_sort_add_time:
             case R.id.menu_sort_update_time:
             case R.id.menu_sort_count:
+                Toast.makeText(this,"强子努力开发中，敬请期待。。。",Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
