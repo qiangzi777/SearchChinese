@@ -5,7 +5,6 @@ import android.app.Application;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -42,10 +41,13 @@ public class NewWordViewModel extends ViewModel {
         return newWordRepository.searchBy();
     }
 
-    public void setFilter(String chinese, String pinyin){
-        newWordRepository.setFilter(chinese,pinyin);
+    public void setOrderFilter(NewWordRepository.ORDER_TYPE orderType){
+        newWordRepository.setOrderFilter(orderType);
     }
-    public void setFilter(String s){
-        newWordRepository.setFilter(s);
+    public void setSearchFilter(String chinese, String pinyin){
+        newWordRepository.setSearchFilter(chinese,pinyin);
+    }
+    public void setSearchFilter(String s){
+        newWordRepository.setSearchFilter(s);
     }
 }

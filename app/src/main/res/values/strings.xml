@@ -12,4 +12,8 @@
     <string name="sort_count_text">按查看次数排序</string>
     <string name="sort_update_time_text">按查看时间排序</string>
     <string name="refresh_web_text">重载</string>
+    <string name="list_display_type_text">切换风格</string>
+    <string name="shp_settings_name">settings</string>
+    <string name="shp_display_type">shp_display_type</string>
+    <string name="sort_pinyin_text">按拼音排序</string>
 </resources>

@@ -17,19 +17,56 @@ import androidx.lifecycle.Transformations;
 
 public class NewWordRepository {
 
+    public enum ORDER_TYPE{
+        ORDER_BY_ADD_TIME_ASC,
+        ORDER_BY_ADD_TIME_DESC,
+        ORDER_BY_UPDATE_TIME_ASC,
+        ORDER_BY_UPDATE_TIME_DESC,
+        ORDER_BY_PINYIN_ASC,
+        ORDER_BY_PINYIN_DESC,
+        ORDER_BY_COUNTER_ASC,
+        ORDER_BY_COUNTER_DESC,
+    }
     private static final String TAG = "NewWordRepository";
     private NewWordDao newWordDao;
     private LiveData<List<NewWord>> allNewWords;
     private LiveData<List<NewWord>> searchByNewWords;
     private NewWord filterNewWord;
     private MutableLiveData<NewWord> filterLiveData;
+    private MutableLiveData<ORDER_TYPE> filterOrderType;
     private Context context;
 
     public NewWordRepository(Context context) {
         this.context = context;
         NewWordDatabase database = NewWordDatabase.getInstance(context);
         newWordDao = database.getNewWordDao();
-        allNewWords = newWordDao.getAll();
+        filterOrderType = new MutableLiveData<>();
+        allNewWords = Transformations.switchMap(filterOrderType,
+                new Function<ORDER_TYPE, LiveData<List<NewWord>>>() {
+                    @Override
+                    public LiveData<List<NewWord>> apply(ORDER_TYPE input) {
+                        switch (input){
+                            case ORDER_BY_ADD_TIME_ASC:
+                                return newWordDao.getAllOrderByAddTimeAsc();
+                            case ORDER_BY_ADD_TIME_DESC:
+                                return newWordDao.getAllOrderByAddTimeDesc();
+                            case ORDER_BY_UPDATE_TIME_ASC:
+                                return newWordDao.getAllOrderByUpdateTimeAsc();
+                            case ORDER_BY_UPDATE_TIME_DESC:
+                                return newWordDao.getAllOrderByUpdateTimeDesc();
+                            case ORDER_BY_PINYIN_ASC:
+                                return newWordDao.getAllOrderByPinyinAsc();
+                            case ORDER_BY_PINYIN_DESC:
+                                return newWordDao.getAllOrderByPinyinDesc();
+                            case ORDER_BY_COUNTER_ASC:
+                                return newWordDao.getAllOrderByCounterAsc();
+                            case ORDER_BY_COUNTER_DESC:
+                                return newWordDao.getAllOrderByCounterDesc();
+                            default:
+                                return newWordDao.getAllOrderByPinyinAsc();
+                        }
+                    }
+                });
         filterNewWord = new NewWord();
         filterLiveData = new MutableLiveData(filterNewWord);
         searchByNewWords = Transformations.switchMap(filterLiveData,
@@ -42,6 +79,7 @@ public class NewWordRepository {
     }
 
     public LiveData<List<NewWord>> getAllNewWords() {
+        setOrderFilter(ORDER_TYPE.ORDER_BY_PINYIN_ASC);
         return allNewWords;
     }
     public void insertNewWords(NewWord... words){
@@ -64,11 +102,14 @@ public class NewWordRepository {
         return searchByNewWords;
     }
 
-    public void setFilter(String chinese, String pinyin){
+    public void setOrderFilter(ORDER_TYPE orderType){
+        filterOrderType.setValue(orderType);
+    }
+    public void setSearchFilter(String chinese, String pinyin){
         filterNewWord.chinese = chinese;
         filterNewWord.pinyin = pinyin;
     }
-    public void setFilter(String s){
+    public void setSearchFilter(String s){
         Log.d(TAG, "setFilter: s="+s);
         if(PinyinUtils.isChinese(s)){
             filterNewWord.chinese = s;
@@ -85,7 +126,7 @@ public class NewWordRepository {
     }
     public void insertOrUpdateNewWord1(final String chinese){
         Log.d(TAG, "insertOrUpdateNewWord: chinese="+chinese);
-        setFilter(chinese, "");
+        setSearchFilter(chinese, "");
         searchByNewWords.observe((LifecycleOwner) this.context, new Observer<List<NewWord>>() {
             @Override
             public void onChanged(List<NewWord> newWords) {

@@ -19,28 +19,41 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
 
+    public static final int LIST_DISPLAY_TYPE_NORMAL = 0;
+    public static final int LIST_DISPLAY_TYPE_CARD = 1;
+    public static final int LIST_DISPLAY_TYPE_MAX = 2;
+
     private static final String TAG = "RecyclerViewAdapter";
     private List<NewWord> allNewWords = new ArrayList<>();
     private NewWordViewModel newWordViewModel;
+    private int list_display_type = LIST_DISPLAY_TYPE_NORMAL;
 
-    public RecyclerViewAdapter(NewWordViewModel newWordViewModel) {
+    public RecyclerViewAdapter(int dspType, NewWordViewModel newWordViewModel) {
         this.newWordViewModel = newWordViewModel;
+        this.list_display_type = dspType;
     }
     public void setAllNewWords(List<NewWord> allNewWords) {
         this.allNewWords = allNewWords;
     }
-
+    public NewWord getDataByPosition(int position){
+        return allNewWords.get(position);
+    }
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.item_new_word,parent,false);
+        View view = null;
+        if(list_display_type==LIST_DISPLAY_TYPE_NORMAL)
+            view = inflater.inflate(R.layout.item_new_word,parent,false);
+        else if(list_display_type == LIST_DISPLAY_TYPE_CARD){
+            view = inflater.inflate(R.layout.item_new_word_card,parent,false);
+        }
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder: pos="+position);
+//        Log.d(TAG, "onBindViewHolder: pos="+position);
         holder.bindData(position);
     }
 

@@ -12,8 +12,22 @@ import androidx.room.Update;
 @Dao
 public interface NewWordDao {
 
+    @Query("SELECT * FROM newword ORDER BY add_time ASC")
+    LiveData<List<NewWord>> getAllOrderByAddTimeAsc();
     @Query("SELECT * FROM newword ORDER BY add_time DESC")
-    LiveData<List<NewWord>> getAll();
+    LiveData<List<NewWord>> getAllOrderByAddTimeDesc();
+    @Query("SELECT * FROM newword ORDER BY update_time ASC")
+    LiveData<List<NewWord>> getAllOrderByUpdateTimeAsc();
+    @Query("SELECT * FROM newword ORDER BY update_time DESC")
+    LiveData<List<NewWord>> getAllOrderByUpdateTimeDesc();
+    @Query("SELECT * FROM newword ORDER BY pinyin ASC")
+    LiveData<List<NewWord>> getAllOrderByPinyinAsc();
+    @Query("SELECT * FROM newword ORDER BY pinyin DESC")
+    LiveData<List<NewWord>> getAllOrderByPinyinDesc();
+    @Query("SELECT * FROM newword ORDER BY counter ASC")
+    LiveData<List<NewWord>> getAllOrderByCounterAsc();
+    @Query("SELECT * FROM newword ORDER BY counter DESC")
+    LiveData<List<NewWord>> getAllOrderByCounterDesc();
 
     @Insert
     void insert(NewWord... words);
