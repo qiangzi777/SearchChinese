@@ -19,7 +19,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.neusoft.qiangzi.search.R;
@@ -65,6 +64,7 @@ public class NewWordListActivity extends AppCompatActivity {
         }).get(NewWordViewModel.class);
         SharedPreferences shp = getSharedPreferences(getString(R.string.shp_settings_name),MODE_PRIVATE);
         int dspType = shp.getInt(getString(R.string.shp_display_type), LIST_DISPLAY_TYPE_NORMAL);
+        NewWordRepository.ORDER_TYPE orderType = NewWordRepository.ORDER_TYPE.values()[shp.getInt(getString(R.string.shp_order_type), 0)];
         recyclerViewAdapterNormal = new RecyclerViewAdapter(LIST_DISPLAY_TYPE_NORMAL,viewModel);
         recyclerViewAdapterCard = new RecyclerViewAdapter(LIST_DISPLAY_TYPE_CARD,viewModel);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -77,6 +77,7 @@ public class NewWordListActivity extends AppCompatActivity {
                 updateRecyclerViewData(newWords);
             }
         });
+        viewModel.setOrderFilter(orderType);
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT) {
             @Override
@@ -178,16 +179,13 @@ public class NewWordListActivity extends AppCompatActivity {
                         .show();
                 break;
             case R.id.menu_sort_add_time:
-                viewModel.setOrderFilter(NewWordRepository.ORDER_TYPE.ORDER_BY_ADD_TIME_DESC);
+                setNewWordsOrderType(NewWordRepository.ORDER_TYPE.ORDER_BY_ADD_TIME_DESC);
                 break;
             case R.id.menu_sort_pinyin:
-                viewModel.setOrderFilter(NewWordRepository.ORDER_TYPE.ORDER_BY_PINYIN_ASC);
-                break;
-            case R.id.menu_sort_update_time:
-                viewModel.setOrderFilter(NewWordRepository.ORDER_TYPE.ORDER_BY_UPDATE_TIME_DESC);
+                setNewWordsOrderType(NewWordRepository.ORDER_TYPE.ORDER_BY_PINYIN_ASC);
                 break;
             case R.id.menu_sort_count:
-                viewModel.setOrderFilter(NewWordRepository.ORDER_TYPE.ORDER_BY_COUNTER_DESC);
+                setNewWordsOrderType(NewWordRepository.ORDER_TYPE.ORDER_BY_COUNTER_DESC);
                 break;
             case R.id.menu_list_display_type:
                 SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.shp_settings_name),MODE_PRIVATE);
@@ -204,6 +202,13 @@ public class NewWordListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void setNewWordsOrderType(NewWordRepository.ORDER_TYPE orderType){
+        viewModel.setOrderFilter(orderType);
+        SharedPreferences shp = getSharedPreferences(getString(R.string.shp_settings_name), MODE_PRIVATE);
+        SharedPreferences.Editor editor = shp.edit();
+        editor.putInt(getString(R.string.shp_order_type), orderType.ordinal());
+        editor.apply();
+    }
     private void setRecyclerViewAdapter(int dspType) {
         if(dspType== LIST_DISPLAY_TYPE_NORMAL){
             Log.d(TAG, "setRecyclerViewAdapter: normal type");

@@ -19,6 +19,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.neusoft.qiangzi.search.R;
+import com.neusoft.qiangzi.search.data.NewWordRepository;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
@@ -27,6 +28,7 @@ public class WebSearchActivity extends AppCompatActivity {
 
     private static final String TAG = "WebSearchActivity";
     WebView webView;
+    NewWordRepository newWordRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,8 @@ public class WebSearchActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
 
         webView.loadUrl(getString(R.string.BAIDU_HANYU_URL) + word);
+
+        newWordRepository = new NewWordRepository(this);
     }
 
     /**
@@ -92,6 +96,8 @@ public class WebSearchActivity extends AppCompatActivity {
                         zuci = URLDecoderString(zuci);
                         if(!zuci.endsWith("组词")) {
                             Log.d(TAG, "zuci=" + zuci);
+                            String word = getIntent().getStringExtra("word");
+                            newWordRepository.appendZuci(word,zuci);
                         }
                     }
                     view.loadUrl(url);

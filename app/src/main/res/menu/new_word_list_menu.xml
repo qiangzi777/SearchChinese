@@ -28,9 +28,6 @@
                 android:id="@+id/menu_sort_pinyin"
                 android:title="@string/sort_pinyin_text" />
             <item
-                android:id="@+id/menu_sort_update_time"
-                android:title="@string/sort_update_time_text" />
-            <item
                 android:id="@+id/menu_sort_count"
                 android:title="@string/sort_count_text" />
         </menu>

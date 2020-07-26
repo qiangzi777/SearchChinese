@@ -20,8 +20,6 @@ public class NewWordRepository {
     public enum ORDER_TYPE{
         ORDER_BY_ADD_TIME_ASC,
         ORDER_BY_ADD_TIME_DESC,
-        ORDER_BY_UPDATE_TIME_ASC,
-        ORDER_BY_UPDATE_TIME_DESC,
         ORDER_BY_PINYIN_ASC,
         ORDER_BY_PINYIN_DESC,
         ORDER_BY_COUNTER_ASC,
@@ -50,10 +48,6 @@ public class NewWordRepository {
                                 return newWordDao.getAllOrderByAddTimeAsc();
                             case ORDER_BY_ADD_TIME_DESC:
                                 return newWordDao.getAllOrderByAddTimeDesc();
-                            case ORDER_BY_UPDATE_TIME_ASC:
-                                return newWordDao.getAllOrderByUpdateTimeAsc();
-                            case ORDER_BY_UPDATE_TIME_DESC:
-                                return newWordDao.getAllOrderByUpdateTimeDesc();
                             case ORDER_BY_PINYIN_ASC:
                                 return newWordDao.getAllOrderByPinyinAsc();
                             case ORDER_BY_PINYIN_DESC:
@@ -124,6 +118,9 @@ public class NewWordRepository {
     public void saveNewWord(String chinese){
         new SaveNewWordAsyncTask(newWordDao).execute(chinese);
     }
+    public void appendZuci(String chinese, String zuci){
+        new appendZuciAsyncTask(newWordDao).execute(chinese, zuci);
+    }
     public void insertOrUpdateNewWord1(final String chinese){
         Log.d(TAG, "insertOrUpdateNewWord: chinese="+chinese);
         setSearchFilter(chinese, "");
@@ -136,11 +133,10 @@ public class NewWordRepository {
                     newWord = new NewWord();
                     newWord.chinese = chinese;
                     newWord.pinyin = PinyinUtils.getSpellString(chinese)[0];
-                    newWord.pinyinEnglish = PinyinUtils.toneStringToString(newWord.pinyin);
+                    newWord.pinyin_en = PinyinUtils.toneStringToString(newWord.pinyin);
                     insertNewWords(newWord);
                 }else{
                     newWord.counter++;
-                    newWord.setUpdateTimeToNow();
                     updateNewWords(newWord);
                 }
                 Log.d(TAG, "insertOrUpdateNewWord:onChanged: word="+newWord.toString());
@@ -218,14 +214,36 @@ public class NewWordRepository {
                 newWord = new NewWord();
                 newWord.chinese = chinese;
                 newWord.pinyin = PinyinUtils.getSpellString(chinese)[0];
-                newWord.pinyinEnglish = PinyinUtils.toneStringToString(newWord.pinyin);
+                newWord.pinyin_en = PinyinUtils.toneStringToString(newWord.pinyin);
                 newWordDao.insert(newWord);
             }else{
                 newWord.counter++;
-                newWord.setUpdateTimeToNow();
                 newWordDao.update(newWord);
             }
             Log.d(TAG, "SaveNewWordAsyncTask:doInBackground: word="+newWord.toString());
+            return null;
+        }
+    }
+
+    static class appendZuciAsyncTask extends AsyncTask<String,Void,Void>{
+        private NewWordDao newWordDao;
+
+        appendZuciAsyncTask(NewWordDao newWordDao) {
+            this.newWordDao = newWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(String... str) {
+            String chinese = str[0];
+            String zuci = str[1];
+            NewWord newWord = newWordDao.findByChinese(chinese);
+            if(newWord == null){
+                return null;
+            }else{
+                newWord.appendZuci(zuci);
+                newWordDao.update(newWord);
+            }
+            Log.d(TAG, "appendZuciAsyncTask:doInBackground: word="+newWord.toString());
             return null;
         }
     }

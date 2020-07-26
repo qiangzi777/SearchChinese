@@ -15,7 +15,7 @@ import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 //singleton
-@Database(entities = {NewWord.class},version = 2,exportSchema = false)
+@Database(entities = {NewWord.class},version = 3,exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class NewWordDatabase extends RoomDatabase {
     private static NewWordDatabase instance = null;
@@ -26,7 +26,7 @@ public abstract class NewWordDatabase extends RoomDatabase {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     NewWordDatabase.class, "new_words")
 //                    .allowMainThreadQueries()
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_2_3)
                     .build();
         }
         return instance;
@@ -45,6 +45,20 @@ public abstract class NewWordDatabase extends RoomDatabase {
                 database.update("newword",0,values,
                         "id=?", new String[]{String.valueOf(id)});
             }
+        }
+    };
+    static final Migration MIGRATION_2_3 = new Migration(2,3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE newword_temp (" +
+                    "id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                    "chinese TEXT, pinyin TEXT, pinyin_en TEXT, " +
+                    "counter INTEGER NOT NULL DEFAULT 1," +
+                    "add_time INTEGER, zuci TEXT)");
+            database.execSQL("INSERT INTO newword_temp (chinese,pinyin,pinyin_en,counter,add_time)" +
+                    "SELECT chinese,pinyin,pinyin_en,counter,add_time FROM newword");
+            database.execSQL("DROP TABLE newword");
+            database.execSQL("ALTER TABLE newword_temp RENAME TO newword");
         }
     };
 }

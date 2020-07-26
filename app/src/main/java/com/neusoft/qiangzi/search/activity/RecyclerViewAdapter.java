@@ -1,7 +1,6 @@
 package com.neusoft.qiangzi.search.activity;
 
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,14 +63,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     class MyViewHolder extends RecyclerView.ViewHolder{
         private NewWord word;
-        TextView textViewPosition,textViewChinese,textViewPinyin,textViewUpdateTime;
+        TextView textViewPosition,textViewChinese,textViewPinyin, textViewZuci;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewPosition = itemView.findViewById(R.id.textViewPosition);
             textViewChinese = itemView.findViewById(R.id.textViewChinese);
             textViewPinyin = itemView.findViewById(R.id.textViewPinyin);
-            textViewUpdateTime = itemView.findViewById(R.id.textViewUpdateTime);
+            textViewZuci = itemView.findViewById(R.id.textViewZuci);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -81,7 +80,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     view.getContext().startActivity(i);
                     /* 跟新点击条目数据 */
                     word.counter++;
-                    word.setUpdateTimeToNow();
                     newWordViewModel.updateNewWords(word);
                 }
             });
@@ -91,7 +89,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             textViewPosition.setText(String.valueOf(position + 1));
             textViewChinese.setText(word.chinese);
             textViewPinyin.setText(word.pinyin);
-            textViewUpdateTime.setText(word.getUpdateTimeAgo());
+            textViewZuci.setText(word.getZuciString());
         }
     }
 }

@@ -50,9 +50,11 @@
         app:layout_constraintTop_toTopOf="@+id/textViewChinese" />
 
     <TextView
-        android:id="@+id/textViewUpdateTime"
-        android:layout_width="wrap_content"
+        android:id="@+id/textViewZuci"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lines="1"
         android:text="两天前"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/textViewPinyin"
@@ -65,10 +67,10 @@
         android:id="@+id/imageView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewUpdateTime"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewZuci"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/textViewUpdateTime"
+        app:layout_constraintTop_toTopOf="@+id/textViewZuci"
         app:srcCompat="@drawable/ic_chevron_right_black_24dp" />
 
     <TextView

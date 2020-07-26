@@ -1,8 +1,10 @@
 package com.neusoft.qiangzi.search.data;
 
 import java.util.Date;
+import java.util.List;
 
 import androidx.room.TypeConverter;
+import androidx.room.TypeConverters;
 
 public class Converters {
     @TypeConverter
@@ -18,4 +20,23 @@ public class Converters {
             return date.getTime();
         }
     }
+
+    @TypeConverter
+    public String[] stringToArray(String zuci){
+        if(zuci==null) return null;
+        return zuci.split(",");
+    }
+
+    @TypeConverter
+    public String arrayToString(String[] arr){
+        if(arr == null) return null;
+        StringBuilder sb = new StringBuilder();
+        for (String str:arr
+             ) {
+            sb.append(str);
+            sb.append(",");
+        }
+        return sb.toString();
+    }
+
 }

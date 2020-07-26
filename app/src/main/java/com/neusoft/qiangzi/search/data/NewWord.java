@@ -11,6 +11,8 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class NewWord {
+    public static final int ZUCI_MAX_LENGTH = 8;
+
     @PrimaryKey(autoGenerate = true)
     public int id;
     @ColumnInfo
@@ -18,33 +20,75 @@ public class NewWord {
     @ColumnInfo
     public String pinyin;
     @ColumnInfo(name = "pinyin_en")
-    public String pinyinEnglish;
+    public String pinyin_en;
     @ColumnInfo
     public int counter;
 //    @ColumnInfo
 //    public int userid;
     @ColumnInfo(name = "add_time")
     public Date addTime;
-    @ColumnInfo(name = "update_time")
-    public Date updateTime;
+    @ColumnInfo(name = "zuci")
+    public String[] zuci;
 
     public NewWord() {
         this.counter = 1;
         this.addTime = new Date(System.currentTimeMillis());
-        this.updateTime = new Date(System.currentTimeMillis());
-    }
-    public void setUpdateTimeToNow(){
-        this.updateTime = new Date(System.currentTimeMillis());
     }
 
-    public String getUpdateTimeString(){
-        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd", Locale.CHINA);
-        return format.format(updateTime);
-    }
-    public String getUpdateTimeAgo(){
-        return timeAgo(updateTime);
+    public void appendZuci(String zuci) {
+        if(zuci==null || zuci.isEmpty())return;
+        if(this.zuci ==null) {
+            this.zuci = new String[1];
+            this.zuci[0] = zuci;
+        }else {
+            for (String str:this.zuci
+                 ) {
+                if(str.equals(zuci))return;
+            }
+            String[] arr = new String[this.zuci.length+1];
+            System.arraycopy(this.zuci, 0, arr, 0, this.zuci.length);
+            arr[this.zuci.length] = zuci;
+            this.zuci = arr;
+        }
     }
 
+    public String getZuciString(){
+        if(zuci==null)return "还没看过组词";
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<zuci.length;i++) {
+            sb.append(zuci[i]);
+            if(i<zuci.length-1)
+                sb.append(",");
+        }
+        return sb.toString();
+    }
+    public String getZuciEllipsis(){
+        if(zuci==null)return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<zuci.length;i++) {
+            sb.append(zuci[i]);
+            if(i<zuci.length-1)
+                sb.append(",");
+            if(sb.length() > ZUCI_MAX_LENGTH){
+                return sb.substring(0, ZUCI_MAX_LENGTH-1)+"...";
+            }
+        }
+        return sb.toString();
+    }
+    public static String ellipsis(final String text, int length)
+    {
+        // The letters [iIl1] are slim enough to only count as half a character.
+//        length += Math.ceil(text.replaceAll("[^iIl]", "").length() / 2.0d);
+        if (text.length() > length)
+        {
+            return text.substring(0, length - 2) + "...";
+        }
+        return text;
+    }
+
+    public String getAddTimeAgo(){
+        return timeAgo(addTime);
+    }
     private String timeAgo(Date createdTime) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd", Locale.CHINA);
         if (createdTime != null) {
@@ -71,6 +115,7 @@ public class NewWord {
         StringBuilder sb = new StringBuilder();
         sb.append(chinese);
         sb.append(" ").append(pinyin);
+        sb.append(" ").append(getZuciEllipsis());
         sb.append(" c=").append(counter);
         return sb.toString();
     }

@@ -16,13 +16,9 @@ public interface NewWordDao {
     LiveData<List<NewWord>> getAllOrderByAddTimeAsc();
     @Query("SELECT * FROM newword ORDER BY add_time DESC")
     LiveData<List<NewWord>> getAllOrderByAddTimeDesc();
-    @Query("SELECT * FROM newword ORDER BY update_time ASC")
-    LiveData<List<NewWord>> getAllOrderByUpdateTimeAsc();
-    @Query("SELECT * FROM newword ORDER BY update_time DESC")
-    LiveData<List<NewWord>> getAllOrderByUpdateTimeDesc();
-    @Query("SELECT * FROM newword ORDER BY pinyin ASC")
+    @Query("SELECT * FROM newword ORDER BY pinyin_en ASC")
     LiveData<List<NewWord>> getAllOrderByPinyinAsc();
-    @Query("SELECT * FROM newword ORDER BY pinyin DESC")
+    @Query("SELECT * FROM newword ORDER BY pinyin_en DESC")
     LiveData<List<NewWord>> getAllOrderByPinyinDesc();
     @Query("SELECT * FROM newword ORDER BY counter ASC")
     LiveData<List<NewWord>> getAllOrderByCounterAsc();
@@ -44,7 +40,7 @@ public interface NewWordDao {
     @Query("SELECT * FROM newword WHERE chinese=:chinese LIMIT 1")
     NewWord findByChinese(String chinese);
 
-    @Query("SELECT * FROM newword WHERE pinyin_en LIKE :pinyin || '%' ORDER BY pinyin ASC")
+    @Query("SELECT * FROM newword WHERE pinyin_en LIKE :pinyin || '%' ORDER BY pinyin_en ASC")
     LiveData<List<NewWord>> findByPinyin(String pinyin);
 
     @Query("SELECT * FROM newword WHERE chinese LIKE :chinese || '%' " +
