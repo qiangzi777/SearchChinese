@@ -18,35 +18,32 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
 
-    public static final int LIST_DISPLAY_TYPE_NORMAL = 0;
-    public static final int LIST_DISPLAY_TYPE_CARD = 1;
-    public static final int LIST_DISPLAY_TYPE_MAX = 2;
+    static final int LIST_DISPLAY_TYPE_NORMAL = 0;
+    static final int LIST_DISPLAY_TYPE_CARD = 1;
+    static final int LIST_DISPLAY_TYPE_MAX = 2;
 
-    private static final String TAG = "RecyclerViewAdapter";
     private List<NewWord> allNewWords = new ArrayList<>();
     private NewWordViewModel newWordViewModel;
-    private int list_display_type = LIST_DISPLAY_TYPE_NORMAL;
+    private int list_display_type;
 
-    public RecyclerViewAdapter(int dspType, NewWordViewModel newWordViewModel) {
+    RecyclerViewAdapter(int dspType, NewWordViewModel newWordViewModel) {
         this.newWordViewModel = newWordViewModel;
         this.list_display_type = dspType;
     }
-    public void setAllNewWords(List<NewWord> allNewWords) {
+    void setAllNewWords(List<NewWord> allNewWords) {
         this.allNewWords = allNewWords;
     }
-    public NewWord getDataByPosition(int position){
+    NewWord getDataByPosition(int position){
         return allNewWords.get(position);
     }
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = null;
+        View view;
         if(list_display_type==LIST_DISPLAY_TYPE_NORMAL)
             view = inflater.inflate(R.layout.item_new_word,parent,false);
-        else if(list_display_type == LIST_DISPLAY_TYPE_CARD){
-            view = inflater.inflate(R.layout.item_new_word_card,parent,false);
-        }
+        else view = inflater.inflate(R.layout.item_new_word_card, parent, false);
         return new MyViewHolder(view);
     }
 
@@ -65,7 +62,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         private NewWord word;
         TextView textViewPosition,textViewChinese,textViewPinyin, textViewZuci;
 
-        public MyViewHolder(@NonNull View itemView) {
+        MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewPosition = itemView.findViewById(R.id.textViewPosition);
             textViewChinese = itemView.findViewById(R.id.textViewChinese);
@@ -84,7 +81,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 }
             });
         }
-        public void bindData(int position) {
+        void bindData(int position) {
             this.word = allNewWords.get(position);
             textViewPosition.setText(String.valueOf(position + 1));
             textViewChinese.setText(word.chinese);

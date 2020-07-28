@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_refresh_black_24dp"
         android:title="@string/refresh_web_text"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_open_in_browser"
+        android:icon="@drawable/ic_open_in_browser_black_24dp"
+        android:title="@string/menu_open_in_browser_text"
+        app:showAsAction="ifRoom" />
 </menu>

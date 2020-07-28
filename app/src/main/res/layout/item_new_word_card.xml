@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
-    android:clickable="true">
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
@@ -54,7 +54,7 @@
                 android:id="@+id/textViewPinyin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="zi"
+                android:text="@string/textview_pinyin_default_text"
                 android:textColor="@color/pinyinColor"
                 android:textSize="24sp"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewChinese"
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:lines="1"
-                android:text="两天前"
+                android:text="@string/textview_zuci_default_text"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewPinyin"
                 app:layout_constraintEnd_toStartOf="@+id/guideline2"
@@ -84,13 +84,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/guideline2"
                 app:layout_constraintTop_toTopOf="@+id/textViewZuci"
-                app:srcCompat="@drawable/ic_chevron_right_black_24dp" />
+                app:srcCompat="@drawable/ic_chevron_right_black_24dp"
+                android:contentDescription="@string/imageview_right_icon_description" />
 
             <TextView
                 android:id="@+id/textViewChinese"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="字"
+                android:text="@string/textview_chinese_default_text"
                 android:textColor="@color/hanziColor"
                 android:textSize="48sp"
                 app:layout_constraintBottom_toBottomOf="@+id/textViewPosition"
@@ -102,7 +103,7 @@
                 android:id="@+id/textViewPosition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1"
+                android:text="@string/list_index_default_text"
                 android:textSize="24sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/textViewChinese"

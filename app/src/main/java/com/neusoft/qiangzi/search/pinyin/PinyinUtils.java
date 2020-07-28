@@ -19,7 +19,7 @@ public class PinyinUtils {
     private static final char[][] toneCharArray = {
             {'a', 'ā'},
             {'a', 'á'},
-            {'a', 'ǎ'},
+            {'a', 'ă'},
             {'a', 'à'},
             {'e', 'ē'},
             {'e', 'é'},
@@ -42,10 +42,10 @@ public class PinyinUtils {
             {'v', 'ǚ'},
             {'v', 'ǜ'},
     };
-    public static char toneCharToChar(char c){
-        for(int i=0;i<toneCharArray.length;i++){
-            if(toneCharArray[i][1]==c)
-                return toneCharArray[i][0];
+    private static char toneCharToChar(char c){
+        for (char[] chars : toneCharArray) {
+            if (chars[1] == c)
+                return chars[0];
         }
         return c;
     }
@@ -126,7 +126,6 @@ public class PinyinUtils {
                     String[] pinyinUnit = PinyinHelper.toHanyuPinyinStringArray(c, format);
                     if (pinyinUnit == null) {
                         pinyin[index] = "null";  // 非汉字字符，如标点符号
-                        continue;
                     } else {
                         pinyin[index] = formatCenterUnit(pinyinUnit[0].substring(0, pinyinUnit[0].length() - 1)) +
                                 pinyinUnit[0].charAt(pinyinUnit[0].length() - 1);  // 带音调且长度固定为7个字符长度,,拼音居中,末尾优先
@@ -184,11 +183,11 @@ public class PinyinUtils {
 
     /**
      * 判断是否为汉字
-     * @param string
-     * @return
+     * @param string 字符串
+     * @return 是否为汉字
      */
     public static boolean isChinese(String string) {
-        char n = 0;
+        char n;
         if(string == null || string.length()==0)
             return false;
         for (int i = 0; i < string.length(); i++) {
@@ -205,8 +204,8 @@ public class PinyinUtils {
     }
     /**
      * 1.判断字符串是否仅为数字:
-     * @param str
-     * @return
+     * @param str 字符串
+     * @return 是否为数字
      */
     public static boolean isNumeric(String str) {
         for (int i = str.length(); --i >= 0; ) {

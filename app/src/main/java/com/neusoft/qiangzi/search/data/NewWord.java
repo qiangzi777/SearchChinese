@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class NewWord {
-    public static final int ZUCI_MAX_LENGTH = 8;
+    private static final int ZUCI_MAX_LENGTH = 8;
 
     @PrimaryKey(autoGenerate = true)
     public int id;
@@ -28,14 +28,14 @@ public class NewWord {
     @ColumnInfo(name = "add_time")
     public Date addTime;
     @ColumnInfo(name = "zuci")
-    public String[] zuci;
+    String[] zuci;
 
-    public NewWord() {
+    NewWord() {
         this.counter = 1;
         this.addTime = new Date(System.currentTimeMillis());
     }
 
-    public void appendZuci(String zuci) {
+    void appendZuci(String zuci) {
         if(zuci==null || zuci.isEmpty())return;
         if(this.zuci ==null) {
             this.zuci = new String[1];
@@ -62,7 +62,7 @@ public class NewWord {
         }
         return sb.toString();
     }
-    public String getZuciEllipsis(){
+    private String getZuciEllipsis(){
         if(zuci==null)return "";
         StringBuilder sb = new StringBuilder();
         for (int i=0; i<zuci.length;i++) {
@@ -74,16 +74,6 @@ public class NewWord {
             }
         }
         return sb.toString();
-    }
-    public static String ellipsis(final String text, int length)
-    {
-        // The letters [iIl1] are slim enough to only count as half a character.
-//        length += Math.ceil(text.replaceAll("[^iIl]", "").length() / 2.0d);
-        if (text.length() > length)
-        {
-            return text.substring(0, length - 2) + "...";
-        }
-        return text;
     }
 
     public String getAddTimeAgo(){
@@ -111,12 +101,12 @@ public class NewWord {
         }
     }
 
+    @Override
     public String toString(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(chinese);
-        sb.append(" ").append(pinyin);
-        sb.append(" ").append(getZuciEllipsis());
-        sb.append(" c=").append(counter);
-        return sb.toString();
+        return chinese +
+                " " + pinyin +
+                " " + pinyin_en +
+                " " + getZuciEllipsis() +
+                " c=" + counter;
     }
 }

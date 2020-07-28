@@ -16,7 +16,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_background" />
+        app:srcCompat="@drawable/ic_launcher_background"
+        android:contentDescription="@string/camera_image_description" />
     <com.neusoft.qiangzi.search.view.WarpLinearLayout
         android:id="@+id/resultLayout"
         android:layout_width="0dp"
@@ -36,7 +37,7 @@
         android:layout_marginBottom="16dp"
         android:background="@drawable/button_circle_shape"
         android:onClick="onRetryShotPicBtnClick"
-        android:text="再拍一张"
+        android:text="@string/button_capture_again_text"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

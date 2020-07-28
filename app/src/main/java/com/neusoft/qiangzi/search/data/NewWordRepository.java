@@ -9,10 +9,8 @@ import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 import java.util.List;
 
 import androidx.arch.core.util.Function;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 
 public class NewWordRepository {
@@ -32,10 +30,8 @@ public class NewWordRepository {
     private NewWord filterNewWord;
     private MutableLiveData<NewWord> filterLiveData;
     private MutableLiveData<ORDER_TYPE> filterOrderType;
-    private Context context;
 
     public NewWordRepository(Context context) {
-        this.context = context;
         NewWordDatabase database = NewWordDatabase.getInstance(context);
         newWordDao = database.getNewWordDao();
         filterOrderType = new MutableLiveData<>();
@@ -48,6 +44,7 @@ public class NewWordRepository {
                                 return newWordDao.getAllOrderByAddTimeAsc();
                             case ORDER_BY_ADD_TIME_DESC:
                                 return newWordDao.getAllOrderByAddTimeDesc();
+                            default:
                             case ORDER_BY_PINYIN_ASC:
                                 return newWordDao.getAllOrderByPinyinAsc();
                             case ORDER_BY_PINYIN_DESC:
@@ -56,13 +53,11 @@ public class NewWordRepository {
                                 return newWordDao.getAllOrderByCounterAsc();
                             case ORDER_BY_COUNTER_DESC:
                                 return newWordDao.getAllOrderByCounterDesc();
-                            default:
-                                return newWordDao.getAllOrderByPinyinAsc();
                         }
                     }
                 });
         filterNewWord = new NewWord();
-        filterLiveData = new MutableLiveData(filterNewWord);
+        filterLiveData = new MutableLiveData<>(filterNewWord);
         searchByNewWords = Transformations.switchMap(filterLiveData,
                 new Function<NewWord, LiveData<List<NewWord>>>() {
                     @Override
@@ -72,38 +67,38 @@ public class NewWordRepository {
                 });
     }
 
-    public LiveData<List<NewWord>> getAllNewWords() {
+    LiveData<List<NewWord>> getAllNewWords() {
         setOrderFilter(ORDER_TYPE.ORDER_BY_PINYIN_ASC);
         return allNewWords;
     }
-    public void insertNewWords(NewWord... words){
+    void insertNewWords(NewWord... words){
         new InsertNewWordsAsyncTask(newWordDao).execute(words);
     }
 
-    public void updateNewWords(NewWord... words){
+    void updateNewWords(NewWord... words){
         new UpdateNewWordsAsyncTask(newWordDao).execute(words);
     }
 
-    public void deleteNewWords(NewWord... words){
+    void deleteNewWords(NewWord... words){
         new DeleteNewWordsAsyncTask(newWordDao).execute(words);
     }
 
-    public void deleteAllNewWords(){
+    void deleteAllNewWords(){
         new DeleteAllNewWordsAsyncTask(newWordDao).execute();
     }
 
-    public LiveData<List<NewWord>> searchBy(){
+    LiveData<List<NewWord>> searchBy(){
         return searchByNewWords;
     }
 
-    public void setOrderFilter(ORDER_TYPE orderType){
+    void setOrderFilter(ORDER_TYPE orderType){
         filterOrderType.setValue(orderType);
     }
-    public void setSearchFilter(String chinese, String pinyin){
+    void setSearchFilter(String chinese, String pinyin){
         filterNewWord.chinese = chinese;
         filterNewWord.pinyin = pinyin;
     }
-    public void setSearchFilter(String s){
+    void setSearchFilter(String s){
         Log.d(TAG, "setFilter: s="+s);
         if(PinyinUtils.isChinese(s)){
             filterNewWord.chinese = s;
@@ -121,28 +116,7 @@ public class NewWordRepository {
     public void appendZuci(String chinese, String zuci){
         new appendZuciAsyncTask(newWordDao).execute(chinese, zuci);
     }
-    public void insertOrUpdateNewWord1(final String chinese){
-        Log.d(TAG, "insertOrUpdateNewWord: chinese="+chinese);
-        setSearchFilter(chinese, "");
-        searchByNewWords.observe((LifecycleOwner) this.context, new Observer<List<NewWord>>() {
-            @Override
-            public void onChanged(List<NewWord> newWords) {
-                searchByNewWords.removeObservers((LifecycleOwner) context);
-                NewWord newWord = (newWords==null || newWords.size()==0)?null:newWords.get(0);
-                if(newWord == null){
-                    newWord = new NewWord();
-                    newWord.chinese = chinese;
-                    newWord.pinyin = PinyinUtils.getSpellString(chinese)[0];
-                    newWord.pinyin_en = PinyinUtils.toneStringToString(newWord.pinyin);
-                    insertNewWords(newWord);
-                }else{
-                    newWord.counter++;
-                    updateNewWords(newWord);
-                }
-                Log.d(TAG, "insertOrUpdateNewWord:onChanged: word="+newWord.toString());
-            }
-        });
-    }
+
     static class InsertNewWordsAsyncTask extends AsyncTask<NewWord,Void,Void>{
         private NewWordDao newWordDao;
 

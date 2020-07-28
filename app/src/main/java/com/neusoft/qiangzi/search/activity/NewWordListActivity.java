@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Application;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -59,7 +60,13 @@ public class NewWordListActivity extends AppCompatActivity {
             @NonNull
             @Override
             public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                return (T) new NewWordViewModel(getApplication());
+                try {
+                    return modelClass.getConstructor(Application.class).newInstance(getApplication());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("cannot create instance of "+modelClass,e);
+                }
+//                return (T) new NewWordViewModel(getApplication());
             }
         }).get(NewWordViewModel.class);
         SharedPreferences shp = getSharedPreferences(getString(R.string.shp_settings_name),MODE_PRIVATE);
@@ -163,8 +170,6 @@ public class NewWordListActivity extends AppCompatActivity {
             case android.R.id.home:// back button
                 this.finish();
                 return true;
-            case R.id.menu_delete_selected:
-                break;
             case R.id.menu_delete_all:
                 new AlertDialog.Builder(this)
                         .setTitle("删除确认")
@@ -196,6 +201,7 @@ public class NewWordListActivity extends AppCompatActivity {
                 editor.apply();
                 setRecyclerViewAdapter(dspType);
                 break;
+            case R.id.menu_delete_selected:
             default:
                 break;
         }
@@ -222,9 +228,9 @@ public class NewWordListActivity extends AppCompatActivity {
 
     /**
      * 为了显示menu的图标icon
-     * @param featureId
-     * @param menu
-     * @return
+     * @param featureId 参数1
+     * @param menu 参数2
+     * @return 处理结果
      */
     @Override
     public boolean onMenuOpened(int featureId, Menu menu) {

@@ -1,17 +1,12 @@
 package com.neusoft.qiangzi.search.activity;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -22,14 +17,20 @@ import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Base64;
+import java.net.URLEncoder;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class WebSearchActivity extends AppCompatActivity {
 
     private static final String TAG = "WebSearchActivity";
     WebView webView;
     NewWordRepository newWordRepository;
+    String wordUrlString = "";
+    String urlString; // = "https://www.bilibili.com/video/av753885718";
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +51,24 @@ public class WebSearchActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setSupportZoom(true);
+        webSettings.setLoadsImagesAutomatically(true);// 设置可以自动加载图片
+        webSettings.setAllowFileAccess(true);// 可以读取文件缓存(manifest生效)
+        webSettings.setAppCacheEnabled(true);// 应用可以有缓存
         webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         webSettings.setDomStorageEnabled(true);
+//        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+//        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+//        webSettings.setPluginState(WebSettings.PluginState.ON);
+//        webSettings.setAllowFileAccessFromFileURLs(true);
 
-        webView.loadUrl(getString(R.string.BAIDU_HANYU_URL) + word);
-
+        try {
+            wordUrlString = URLEncoder.encode(word, "UTF-8");
+            urlString = getString(R.string.BAIDU_HANYU_ZICI_URL) + wordUrlString;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            urlString = getString(R.string.BAIDU_HANYU_HOME_URL);
+        }
+        webView.loadUrl(urlString);
         newWordRepository = new NewWordRepository(this);
     }
 
@@ -75,34 +89,33 @@ public class WebSearchActivity extends AppCompatActivity {
 //
 //                }
                 //重定向地址
-                if(url.equals("https://hanyu.baidu.com/")){
+                if(url.equals(getString(R.string.BAIDU_HANYU_HOME_URL))){
                     Log.d(TAG, "reload page to home...");
-                    Intent intent = getIntent();
-                    String word = intent.getStringExtra("word");
-                    view.loadUrl(getString(R.string.BAIDU_HANYU_URL) + word);
+                    view.loadUrl(urlString);
                     view.clearHistory();
                     return true;
                 }
                 //允许访问地址
-                else if(url.contains("https://hanyu.baidu.com/zici/s?wd=")
-                        ||url.contains("https://hanyu.baidu.com/s?wd=")) {
+                else if(url.contains(getString(R.string.BAIDU_HANYU_ZICI_URL))
+                        ||url.contains(getString(R.string.BAIDU_HANYU_SEARCH_URL))) {
                     //获取组词
-                    if ((url.contains("https://hanyu.baidu.com/zici/s?wd=")
+                    if ((url.contains(getString(R.string.BAIDU_HANYU_ZICI_URL))
                             && url.contains("cf=zuci")) ||
-                            (url.contains("https://hanyu.baidu.com/s?wd=")
+                            (url.contains(getString(R.string.BAIDU_HANYU_SEARCH_URL))
                                     && url.contains("ptype=zici"))) {
                         String str = url.substring(url.indexOf("wd=") + 3);
                         String zuci = str.substring(0, str.indexOf("&"));
                         zuci = URLDecoderString(zuci);
+                        String word = getIntent().getStringExtra("word");
                         if(!zuci.endsWith("组词")) {
                             Log.d(TAG, "zuci=" + zuci);
-                            String word = getIntent().getStringExtra("word");
                             newWordRepository.appendZuci(word,zuci);
                         }
                     }
                     view.loadUrl(url);
                     return false;
                 }else {
+//                    view.loadUrl(url);
                     return true;
                 }
             } catch (Exception e) {
@@ -139,6 +152,11 @@ public class WebSearchActivity extends AppCompatActivity {
                 break;
             case R.id.menu_refresh_web:
                 webView.reload();
+                break;
+            case R.id.menu_open_in_browser:
+                Uri uri = Uri.parse(urlString);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
                 break;
         }
         return super.onOptionsItemSelected(item);

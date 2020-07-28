@@ -1,12 +1,11 @@
 package com.neusoft.qiangzi.search.data;
 
 import java.util.Date;
-import java.util.List;
 
 import androidx.room.TypeConverter;
-import androidx.room.TypeConverters;
 
-public class Converters {
+@SuppressWarnings("ALL")
+class Converters {
     @TypeConverter
     public Date fromTimestamp(Long value) {
         return value == null ? null : new Date(value);
