@@ -17,7 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.NewWordListActivity"></activity>
+        <activity android:name=".activity.NewWordListActivity" />
         <activity
             android:name=".activity.WebSearchActivity"
             android:hardwareAccelerated="true"/>

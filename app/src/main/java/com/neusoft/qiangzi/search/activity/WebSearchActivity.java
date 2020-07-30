@@ -124,11 +124,12 @@ public class WebSearchActivity extends AppCompatActivity {
             }
         }
 
-//        @Override
-//        public void onPageFinished(WebView view, String url) {
-//            view.getSettings().setJavaScriptEnabled(true);
-//            super.onPageFinished(view, url);
-//        }
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            urlString = url;
+            Log.d(TAG, "onPageFinished: url="+urlString);
+        }
 //
 //        @Override
 //        public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -147,10 +148,13 @@ public class WebSearchActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:// back button
-                if(webView.canGoBack()) webView.goBack();
+                if(webView.canGoBack()){
+                    webView.goBack();
+                }
                 else this.finish();
                 break;
             case R.id.menu_refresh_web:
+                webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
                 webView.reload();
                 break;
             case R.id.menu_open_in_browser:
@@ -165,7 +169,9 @@ public class WebSearchActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_BACK){
-            if(webView.canGoBack()) webView.goBack();
+            if(webView.canGoBack()) {
+                webView.goBack();
+            }
             else this.finish();
         }
         return true;
