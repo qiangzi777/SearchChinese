@@ -56,19 +56,7 @@ public class NewWordListActivity extends AppCompatActivity {
         }
 
         recyclerView = findViewById(R.id.recyclerView);
-        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                try {
-                    return modelClass.getConstructor(Application.class).newInstance(getApplication());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("cannot create instance of "+modelClass,e);
-                }
-//                return (T) new NewWordViewModel(getApplication());
-            }
-        }).get(NewWordViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(getApplication())).get(NewWordViewModel.class);
         SharedPreferences shp = getSharedPreferences(getString(R.string.shp_settings_name),MODE_PRIVATE);
         int dspType = shp.getInt(getString(R.string.shp_display_type), LIST_DISPLAY_TYPE_NORMAL);
         NewWordRepository.ORDER_TYPE orderType = NewWordRepository.ORDER_TYPE.values()[shp.getInt(getString(R.string.shp_order_type), 0)];

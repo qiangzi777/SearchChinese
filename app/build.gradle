@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "com.neusoft.qiangzi.search"
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
-        versionName "0.8"
+        versionName "1.0.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
