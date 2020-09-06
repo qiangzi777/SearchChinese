@@ -1,20 +1,31 @@
 package com.neusoft.qiangzi.search.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.SearchView;
+import android.widget.Toast;
 
+import com.github.yoojia.anyversion.AnyVersion;
+import com.github.yoojia.anyversion.NotifyStyle;
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.baidu.BaiduOcr;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
 import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
-import com.xiaomi.market.sdk.XiaomiUpdateAgent;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,16 +33,19 @@ public class MainActivity extends AppCompatActivity {
     private BaiduOcr baiduOcr;
     private NewWordRepository repository;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        AnyVersion version = AnyVersion.getInstance();
+//        version.setURL("http://www.facevall.com/source/file/download/search_dictionary_release.json");
+//        version.check(NotifyStyle.Dialog);
+
         setTitle(getString(R.string.mainActivityTitle));
         baiduOcr = BaiduOcr.getInstance(this);
         baiduOcr.init();
-
-        XiaomiUpdateAgent.update(this);
 
         repository = new NewWordRepository(this);
 
@@ -43,7 +57,53 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(i);
 //            }
 //        });
+//        if (checkSelfPermission(Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED) {
+//            requestPermissions(new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW},1);
+//        }
+
+        if (Build.VERSION.SDK_INT >= 23) { // Android6.0及以后需要动态申请权限
+            if (!Settings.canDrawOverlays(this)) {
+                //启动Activity让用户授权
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, 1010);
+            } else {
+                Log.d(TAG, "onCreate: alear windows....1");
+                // 弹出悬浮窗
+                AnyVersion version = AnyVersion.getInstance();
+                version.check(NotifyStyle.Dialog);
+//                showDig();
+            }
+        } else {
+            // 弹出悬浮窗
+            AnyVersion version = AnyVersion.getInstance();
+            version.check(NotifyStyle.Dialog);
+        }
+
+
     }
+
+//    void showDig(){
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Theme_System_Alert)
+//                .setTitle("version name")
+//                .setMessage("version update")
+//                .setCancelable(false)
+//                .setNegativeButton(R.string.later, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                })
+//                .setPositiveButton(R.string.update_now, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                })
+//                ;
+//        AlertDialog dialog = builder.create();
+//        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+//        dialog.show();
+//    }
 
     @Override
     protected void onStart() {
@@ -69,6 +129,16 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, i);
 //        baiduOcr.setImageResult(requestCode,resultCode,data);
 //        Intent i = new Intent(MainActivity.this,ChineseResultActivity.class);
+        if (requestCode == 1010) {
+            if (Build.VERSION.SDK_INT >= 23) { // Android6.0及以后需要动态申请权限
+                if (Settings.canDrawOverlays(this)) {
+                    // 弹出悬浮窗
+                } else {
+                    Toast.makeText(this, "not granted permission!", Toast.LENGTH_SHORT);
+                }
+            }
+            return;
+        }
         if(i==null){
             Log.d(TAG, "onActivityResult: intent is null!");
             return;
