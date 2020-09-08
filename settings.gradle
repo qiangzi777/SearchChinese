@@ -1,2 +1,3 @@
+include ':anyversion'
 rootProject.name='Search'
 include ':app', ':ocr_ui'
