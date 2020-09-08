@@ -1,0 +1,16 @@
+<manifest package="com.github.yoojia.anyversion"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="@string/fileProvider_authorities"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>
