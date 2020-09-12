@@ -32,8 +32,8 @@ public class MyApplication extends Application {
                     String note = json.getString("note");
                     String url = json.getString("url");
                     int code = json.getInt("code");
-                    Log.d(TAG, "onParse: name=" + name + ",note=" + note + ",url=" + url + ",code=" + code);
-                    return new Version(name,note,url,code);
+//                    Log.d(TAG, "onParse: name=" + name + ",note=" + note + ",url=" + url + ",code=" + code);
+                    return new Version("发现新版本："+name,note,url,code);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

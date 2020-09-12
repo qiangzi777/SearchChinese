@@ -8,7 +8,7 @@ android {
         applicationId "com.neusoft.qiangzi.search"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 2
+        versionCode 1
         versionName "1.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

@@ -22,7 +22,7 @@ class Broadcasts {
 
     private Broadcasts() {}
 
-    static void send(Application context, Version remoteVersion){
+    static void send(Context context, Version remoteVersion){
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
         Intent intent = new Intent(BROADCAST_ACTION);
         intent.putExtra(BROADCAST_DATA, remoteVersion);

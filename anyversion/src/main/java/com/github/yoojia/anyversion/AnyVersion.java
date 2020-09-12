@@ -30,7 +30,7 @@ public class AnyVersion {
 
     private static AnyVersion ANY_VERSION = null;
 
-    Application context;
+    Context context;
 
     final VersionParser parser;
 
@@ -50,6 +50,18 @@ public class AnyVersion {
             if (ANY_VERSION == null) {
                 throw new IllegalStateException("AnyVersion NOT init !");
             }
+            return ANY_VERSION;
+        }finally {
+            LOCK.unlock();
+        }
+    }
+    public static AnyVersion getInstance(Context context){
+        try{
+            LOCK.lock();
+            if (ANY_VERSION == null) {
+                throw new IllegalStateException("AnyVersion NOT init !");
+            }
+            ANY_VERSION.context = context;
             return ANY_VERSION;
         }finally {
             LOCK.unlock();
