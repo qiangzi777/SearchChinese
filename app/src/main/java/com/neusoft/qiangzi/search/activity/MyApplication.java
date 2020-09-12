@@ -5,9 +5,9 @@ import android.util.Log;
 
 import com.github.yoojia.anyversion.AnyVersion;
 import com.github.yoojia.anyversion.Callback;
-import com.github.yoojia.anyversion.NotifyStyle;
 import com.github.yoojia.anyversion.Version;
 import com.github.yoojia.anyversion.VersionParser;
+import com.neusoft.qiangzi.search.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +41,7 @@ public class MyApplication extends Application {
             }
         });
         AnyVersion version = AnyVersion.getInstance();
-        version.setURL("http://www.facevall.com/source/file/download/search_dictionary_release.json");
+        version.setURL(getString(R.string.app_version_check_url));
         version.setCallback(new Callback() {
             @Override
             public void onVersion(Version version) {

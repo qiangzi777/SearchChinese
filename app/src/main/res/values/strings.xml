@@ -34,4 +34,5 @@
     <string name="intention_text">帮助孩子们提高学习效率，快快完成学习任务，多多去户外运动！多多享受童年的快乐吧！</string>
     <string name="app_description_text">使用摄像头扫描查生字；\n语音朗读、释义、组词；\n生字本可以收藏查过的生字。</string>
     <string name="thanks_text">感谢您的使用与支持！\n感谢百度AI平台的免费资源！</string>
+    <string name="app_version_check_url">http://www.facevall.com/source/file/download/search_dictionary_release.json</string>
 </resources>

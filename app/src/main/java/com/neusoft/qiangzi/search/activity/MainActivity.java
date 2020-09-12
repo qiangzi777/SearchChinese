@@ -1,21 +1,13 @@
 package com.neusoft.qiangzi.search.activity;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.github.yoojia.anyversion.AnyVersion;
 import com.github.yoojia.anyversion.NotifyStyle;
@@ -133,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.ItemAboutApp:
                 startActivity(new Intent(this, AboutActivity.class));
                 break;
+            default:break;
         }
         return super.onOptionsItemSelected(item);
     }
