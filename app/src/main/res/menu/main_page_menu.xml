@@ -8,4 +8,7 @@
         android:title="@string/search_bar_menu_title"
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/ItemAboutApp"
+        android:title="@string/aboutAppActivityTitle" />
 </menu>
