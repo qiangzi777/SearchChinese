@@ -1,3 +1,5 @@
+include ':tts'
+include ':asr'
 include ':anyversion'
 rootProject.name='Search'
 include ':app', ':ocr_ui'

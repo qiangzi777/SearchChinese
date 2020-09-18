@@ -187,7 +187,7 @@ public class NewWordRepository {
             if(newWord == null){
                 newWord = new NewWord();
                 newWord.chinese = chinese;
-                newWord.pinyin = PinyinUtils.getSpellString(chinese)[0];
+                newWord.pinyin = PinyinUtils.getSpellArray(chinese)[0];
                 newWord.pinyin_en = PinyinUtils.toneStringToString(newWord.pinyin);
                 newWordDao.insert(newWord);
             }else{

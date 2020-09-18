@@ -88,7 +88,7 @@ public class ChineseResultActivity extends AppCompatActivity {
                             return;
                         }
 //                        Log.d(TAG, "onResult: char="+strWord.charAt(i));
-                        View tv = PinyinUtils.getCharView(ChineseResultActivity.this,strWord.charAt(i));
+                        View tv = PinyinUtils.getPinyinView(ChineseResultActivity.this,strWord.charAt(i));
                         tv.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {

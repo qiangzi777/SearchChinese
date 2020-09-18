@@ -1,6 +1,7 @@
 package com.neusoft.qiangzi.search.pinyin;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 
@@ -14,7 +15,11 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
+import androidx.annotation.RequiresApi;
+
 public class PinyinUtils {
+
+    private static final String TAG = "PinyinUtils";
 
     private static final char[][] toneCharArray = {
             {'a', 'ā'},
@@ -64,8 +69,16 @@ public class PinyinUtils {
         }
         return sb.toString();
     }
+    public static String[] toHanziArray(String str){
+        if (str == null || str.isEmpty())return null;
+        String[] arr = new String[str.length()];
+        for (int i = 0; i < str.length(); i++) {
+            arr[i] = String.valueOf(str.charAt(i));
+        }
+        return  arr;
+    }
 
-    public static String[] getSpellString(String character) {
+    public static String[] getSpellArray(String character) {
         if (character != null && character.length() > 0) {
             String[] pinyin = new String[character.length()];
             HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
@@ -92,7 +105,33 @@ public class PinyinUtils {
         }
     }
 
-    public static View getCharView(Context context, char c){
+    public static View getPinyinView(Context context, String text){
+        SpellTextView tv = new SpellTextView(context);
+        tv.setId(View.generateViewId());
+        tv.setChineseString(text);
+        tv.setBackgroundResource(R.drawable.tv_bg_selector);
+        tv.setFocusable(true);
+        tv.setFocusableInTouchMode(true);
+        tv.setClickable(true);
+
+        return tv;
+    }
+
+    public static View getPinyinView2(Context context, String text){
+        PinyinTextView tv = new PinyinTextView(context);
+        tv.setId(View.generateViewId());
+        tv.setText(text);
+        tv.setHanzi(toHanziArray(text));
+        tv.setPinyin(getPinyinArray(text));
+        tv.setBackgroundResource(R.drawable.tv_bg_selector);
+        tv.setFocusable(true);
+        tv.setFocusableInTouchMode(true);
+        tv.setClickable(true);
+
+        return tv;
+    }
+
+    public static View getPinyinView(Context context, char c){
         SpellTextView tv = new SpellTextView(context);
         tv.setId(View.generateViewId());
         tv.setChineseString(String.valueOf(c));
@@ -104,7 +143,7 @@ public class PinyinUtils {
         return tv;
     }
 
-    public static View getWordView(Context context, WordSimple w){
+    public static View getPinyinView(Context context, WordSimple w){
         SpellTextView tv = new SpellTextView(context);
         tv.setId(View.generateViewId());
         tv.setChineseString(w.getWords());
@@ -114,7 +153,7 @@ public class PinyinUtils {
         return tv;
     }
 
-    public static String[] getPinyinString(String hanzi) {
+    public static String[] getPinyinArray(String hanzi) {
         if (hanzi != null && hanzi.length() > 0) {
             String[] pinyin = new String[hanzi.length()];
             HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
@@ -129,7 +168,7 @@ public class PinyinUtils {
                     } else {
                         pinyin[index] = formatCenterUnit(pinyinUnit[0].substring(0, pinyinUnit[0].length() - 1)) +
                                 pinyinUnit[0].charAt(pinyinUnit[0].length() - 1);  // 带音调且长度固定为7个字符长度,,拼音居中,末尾优先
-                        Log.e("pinyin", pinyin[index]);
+                        Log.d(TAG, pinyin[index]);
                     }
                 } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
                     badHanyuPinyinOutputFormatCombination.printStackTrace();

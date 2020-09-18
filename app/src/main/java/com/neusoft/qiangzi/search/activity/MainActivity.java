@@ -1,6 +1,8 @@
 package com.neusoft.qiangzi.search.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,21 +11,38 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 
+import com.baidu.aip.asrwakeup3.core.recog.MyRecognizer;
+import com.baidu.aip.asrwakeup3.core.recog.RecogResult;
+import com.baidu.aip.asrwakeup3.core.recog.listener.IRecogListener;
+import com.baidu.aip.asrwakeup3.core.recog.listener.StatusRecogListener;
+import com.baidu.speech.asr.SpeechConstant;
 import com.github.yoojia.anyversion.AnyVersion;
 import com.github.yoojia.anyversion.NotifyStyle;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.baidu.BaiduOcr;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
 import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
+import com.neusoft.qiangzi.search.pinyin.SpellTextView;
+import com.neusoft.qiangzi.search.view.WarpLinearLayout;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private BaiduOcr baiduOcr;
     private NewWordRepository repository;
+    private FloatingActionButton fabVoice;
+    private WarpLinearLayout resultLayout;
+    protected MyRecognizer mRecognizer;//语音识别对象
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -49,7 +68,20 @@ public class MainActivity extends AppCompatActivity {
 //            requestPermissions(new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW},1);
 //        }
 
-        // 弹出悬浮窗
+        mRecognizer = new MyRecognizer(this, recogListener);//初始化asr
+
+        resultLayout = findViewById(R.id.resultLayout);
+        fabVoice = findViewById(R.id.fabVoice);
+        fabVoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                recogStart();
+            }
+        });
+
+        initPermission();//动态权限
+
+        // 检查版本，弹出悬浮窗
         AnyVersion version = AnyVersion.getInstance(this);
         version.check(NotifyStyle.Dialog);
     }
@@ -130,9 +162,90 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    protected void recogStart() {
+        // DEMO集成步骤2.1 拼接识别参数： 此处params可以打印出来，直接写到你的代码里去，最终的json一致即可。
+        final Map<String, Object> params = new LinkedHashMap<String, Object>();
+        // 基于SDK集成2.1 设置识别参数
+        params.put(SpeechConstant.ACCEPT_AUDIO_VOLUME, false);
+        // params 也可以根据文档此处手动修改，参数会以json的格式在界面和logcat日志中打印
+        Log.i(TAG, "设置的start输入参数：" + params);
+        // DEMO集成步骤2.2 开始识别
+        mRecognizer.start(params);
+    }
+    IRecogListener recogListener = new StatusRecogListener() {
+        @Override
+        public void onAsrReady() {
+            resultLayout.removeAllViews();
+        }
+        @Override
+        public void onAsrPartialResult(String[] results, RecogResult recogResult) {
+            StringBuilder sb = new StringBuilder();
+            for (String word : results
+            ) {
+                sb.append(word);
+
+            }
+        }
+        @Override
+        public void onAsrFinalResult(String[] results, RecogResult recogResult) {
+
+            StringBuilder sb = new StringBuilder();
+            for (String word : results
+            ) {
+                sb.append(word);
+                View tv = PinyinUtils.getPinyinView(MainActivity.this,word);
+                tv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        SpellTextView tv = (SpellTextView)view;
+                        String w = tv.getChineseString();
+                        /* 保存生字到数据库 */
+//                        repository.saveNewWord(w);
+
+                        /* 打开百度汉语 */
+                        Intent i = new Intent(MainActivity.this,WebSearchActivity.class);
+                        i.putExtra("word",w);
+                        startActivity(i);
+                    }
+                });
+                resultLayout.addView(tv);
+            }
+        }
+        @Override
+        public void onAsrFinish(RecogResult recogResult) {
+
+        }
+
+    };
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         baiduOcr.release();
+        mRecognizer.release();
+    }
+
+    private void initPermission() {
+        String[] permissions = {
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.INTERNET,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        };
+
+        ArrayList<String> toApplyList = new ArrayList<>();
+
+        for (String perm : permissions) {
+            if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, perm)) {
+                toApplyList.add(perm);
+                // 进入到这里代表没有权限.
+
+            }
+        }
+        String[] tmpList = new String[toApplyList.size()];
+        if (!toApplyList.isEmpty()) {
+            ActivityCompat.requestPermissions(this, toApplyList.toArray(tmpList), 123);
+        }
+
     }
 }

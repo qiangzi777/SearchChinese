@@ -74,6 +74,7 @@ public class SpellTextView extends TextView {
         float widthMesure = 0f;
         if (pinyin != null && pinyin.length > 0) {
             for (int index = 0; index < pinyin.length; index++) {
+                if(index > 0)widthMesure += textPaintSpell.measureText("1");
                 widthMesure += textPaintSpell.measureText(pinyin[index]);
             }
         }
@@ -82,15 +83,23 @@ public class SpellTextView extends TextView {
         return (int)widthMesure;
     }
     protected int getMesureHeight(){
-        int h = (int)(textPaintChinese.getFontSpacing()*2.5);
-        Log.d(TAG, "getMesureHeight: h="+h);
-        return h;
+        int h = (int)(textPaintChinese.getFontSpacing()*2.4);
+        int pinyinW = getMesureWidth();
+        int rows = 1;
+        if(getWidth() != 0 && pinyinW % getWidth() != 0) rows = pinyinW/getWidth() + 1;
+        Log.d(TAG, "getMesureHeight: one line height="+h+",lines="+rows);
+        return h*rows;
     }
     @Override
     protected void onDraw(Canvas canvas) {
         float widthMesure = 0f;
         int comlum = 1;
         float pinyinWidth;
+        Log.d(TAG, "onDraw: getWidth="+getWidth()+",getHeight="+getHeight());
+        if(isWrapWords && needAjustHeight){
+            setHeight(getMesureHeight());
+            needAjustHeight = false;
+        }
         if (pinyin != null && pinyin.length > 0) {
             for (int index = 0; index < pinyin.length; index++) {
                 pinyinWidth = widthMesure + textPaintSpell.measureText(pinyin[index]);
@@ -103,7 +112,7 @@ public class SpellTextView extends TextView {
                         widthMesure + (textPaintSpell.measureText(pinyin[index]) - textPaintChinese.measureText(chinese[index])) / 2,
                         (comlum * 2) * (textPaintChinese.getFontSpacing()), textPaintChinese);
                 if (index + 1 < pinyin.length) {
-                    widthMesure = widthMesure + textPaintSpell.measureText(pinyin[index] + 1);
+                    widthMesure = widthMesure + textPaintSpell.measureText(pinyin[index] + "1");
                 } else {
                     widthMesure = widthMesure + textPaintSpell.measureText(pinyin[index]);
                 }
@@ -117,10 +126,11 @@ public class SpellTextView extends TextView {
         this.chinese = chinese;
     }
 
+    private boolean needAjustHeight = false;
     //设置文字资源
     public void setChineseString(String string) {
         initTextPaint();
-        String[] spellArray = PinyinUtils.getSpellString(string);
+        String[] spellArray = PinyinUtils.getSpellArray(string);
 //        StringBuilder stringBuilder = new StringBuilder();
 //        for (String s : spellArray){
 //            stringBuilder.append(s);
@@ -136,6 +146,7 @@ public class SpellTextView extends TextView {
         if(isWrapWords){
             setWidth(getMesureWidth());
             setHeight(getMesureHeight());
+            needAjustHeight = true;
         }
     }
     public String getChineseString(){
