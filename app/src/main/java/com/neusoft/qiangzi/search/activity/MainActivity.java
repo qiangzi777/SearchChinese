@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import com.baidu.aip.asrwakeup3.core.recog.MyRecognizer;
 import com.baidu.aip.asrwakeup3.core.recog.RecogResult;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private NewWordRepository repository;
     private FloatingActionButton fabVoice;
     private WarpLinearLayout resultLayout;
+    private TextView tvVoiceHint;
     protected MyRecognizer mRecognizer;//语音识别对象
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         mRecognizer = new MyRecognizer(this, recogListener);//初始化asr
 
         resultLayout = findViewById(R.id.resultLayout);
+        tvVoiceHint = findViewById(R.id.tvVoiceHint);
         fabVoice = findViewById(R.id.fabVoice);
         fabVoice.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,26 +177,14 @@ public class MainActivity extends AppCompatActivity {
     }
     IRecogListener recogListener = new StatusRecogListener() {
         @Override
-        public void onAsrReady() {
-            resultLayout.removeAllViews();
-        }
-        @Override
-        public void onAsrPartialResult(String[] results, RecogResult recogResult) {
-            StringBuilder sb = new StringBuilder();
-            for (String word : results
-            ) {
-                sb.append(word);
-
-            }
-        }
-        @Override
         public void onAsrFinalResult(String[] results, RecogResult recogResult) {
-
-            StringBuilder sb = new StringBuilder();
             for (String word : results
             ) {
-                sb.append(word);
+                if (word.endsWith("，") || word.endsWith(",") || word.endsWith("。") || word.endsWith(".")) {
+                    word = word.substring(0, word.length() - 1);
+                }
                 View tv = PinyinUtils.getPinyinView(MainActivity.this,word);
+                tv.requestFocus();
                 tv.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -201,21 +192,20 @@ public class MainActivity extends AppCompatActivity {
                         String w = tv.getChineseString();
                         /* 保存生字到数据库 */
 //                        repository.saveNewWord(w);
-
                         /* 打开百度汉语 */
                         Intent i = new Intent(MainActivity.this,WebSearchActivity.class);
                         i.putExtra("word",w);
                         startActivity(i);
                     }
                 });
+                if (tvVoiceHint.getVisibility() == View.VISIBLE) {
+                    tvVoiceHint.setVisibility(View.INVISIBLE);
+                    resultLayout.removeView(tvVoiceHint);
+                }
+                if(resultLayout.getChildCount()>6)resultLayout.removeViewAt(0);
                 resultLayout.addView(tv);
             }
         }
-        @Override
-        public void onAsrFinish(RecogResult recogResult) {
-
-        }
-
     };
 
     @Override
