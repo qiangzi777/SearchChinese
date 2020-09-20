@@ -86,7 +86,7 @@ public class WebSearchActivity extends AppCompatActivity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
-                Log.d(TAG, "url="+url);
+                Log.d(TAG, "url=" + url);
                 //在这里你可以拦截url
 //                if(url.equals("https://hanyu.baidu.com/")
 //                        || url.contains("app.gif")
@@ -96,15 +96,15 @@ public class WebSearchActivity extends AppCompatActivity {
 //
 //                }
                 //重定向地址
-                if(url.equals(getString(R.string.BAIDU_HANYU_HOME_URL))){
+                if (url.equals(getString(R.string.BAIDU_HANYU_HOME_URL))) {
                     Log.d(TAG, "reload page to home...");
                     view.loadUrl(urlString);
                     view.clearHistory();
                     return true;
                 }
                 //允许访问地址
-                else if(url.contains(getString(R.string.BAIDU_HANYU_ZICI_URL))
-                        ||url.contains(getString(R.string.BAIDU_HANYU_SEARCH_URL))) {
+                else if (url.contains(getString(R.string.BAIDU_HANYU_ZICI_URL))
+                        || url.contains(getString(R.string.BAIDU_HANYU_SEARCH_URL))) {
                     //获取组词
                     if ((url.contains(getString(R.string.BAIDU_HANYU_ZICI_URL))
                             && url.contains("cf=zuci")) ||
@@ -114,14 +114,18 @@ public class WebSearchActivity extends AppCompatActivity {
                         String zuci = str.substring(0, str.indexOf("&"));
                         zuci = URLDecoderString(zuci);
                         String word = getIntent().getStringExtra("word");
-                        if(!zuci.endsWith("组词")) {
+                        if (!zuci.endsWith("组词")) {
                             Log.d(TAG, "zuci=" + zuci);
-                            newWordRepository.appendZuci(word,zuci);
+                            newWordRepository.appendZuci(word, zuci);
                         }
                     }
                     view.loadUrl(url);
                     return false;
-                }else {
+                } else if (url.contains(getString(R.string.BAIDU_BAIKE_ITEM_URL))) {
+                    Log.d(TAG, "shouldOverrideUrlLoading: baike");
+                    view.loadUrl(url);
+                    return false;
+                } else {
 //                    view.loadUrl(url);
                     return true;
                 }
