@@ -44,6 +44,7 @@ public class WebSearchActivity extends AppCompatActivity {
         }
         Intent intent = getIntent();
         String word = intent.getStringExtra("word");
+        String type = intent.getStringExtra("type");
         webView = findViewById(R.id.webView);
         webView.setWebViewClient(new MyWebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
@@ -63,11 +64,17 @@ public class WebSearchActivity extends AppCompatActivity {
 
         try {
             wordUrlString = URLEncoder.encode(word, "UTF-8");
-            urlString = getString(R.string.BAIDU_HANYU_ZICI_URL) + wordUrlString;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             urlString = getString(R.string.BAIDU_HANYU_HOME_URL);
+            wordUrlString = "";
         }
+        if (type.equals("baike")) {
+            urlString = getString(R.string.BAIDU_BAIKE_ITEM_URL) + wordUrlString;
+        }else {
+            urlString = getString(R.string.BAIDU_HANYU_ZICI_URL) + wordUrlString;
+        }
+
         webView.loadUrl(urlString);
         newWordRepository = new NewWordRepository(this);
     }

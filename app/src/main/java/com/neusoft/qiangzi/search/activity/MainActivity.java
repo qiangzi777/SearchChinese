@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.baidu.aip.asrwakeup3.core.recog.MyRecognizer;
 import com.baidu.aip.asrwakeup3.core.recog.RecogResult;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabVoice;
     private WarpLinearLayout resultLayout;
     private TextView tvVoiceHint;
+    private ToggleButton tgbSearchBaike;
     protected MyRecognizer mRecognizer;//语音识别对象
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         resultLayout = findViewById(R.id.resultLayout);
         tvVoiceHint = findViewById(R.id.tvVoiceHint);
         fabVoice = findViewById(R.id.fabVoice);
+        tgbSearchBaike = findViewById(R.id.tgbSearchBaike);
         fabVoice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -195,6 +198,11 @@ public class MainActivity extends AppCompatActivity {
                         /* 打开百度汉语 */
                         Intent i = new Intent(MainActivity.this,WebSearchActivity.class);
                         i.putExtra("word",w);
+                        if (tgbSearchBaike.isChecked()) {
+                            i.putExtra("type","baike");
+                        }else{
+                            i.putExtra("type","hanyu");
+                        }
                         startActivity(i);
                     }
                 });
@@ -238,4 +246,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 }

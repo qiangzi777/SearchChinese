@@ -69,7 +69,7 @@
                 android:id="@+id/tvVoiceHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="点一下，说出你要查词汇吧！"
+                android:text="@string/click_voice_hint_text"
                 android:textSize="18sp" />
         </com.neusoft.qiangzi.search.view.WarpLinearLayout>
 
@@ -90,4 +90,18 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonNewWords"
         app:layout_constraintVertical_bias="0.7"
         app:srcCompat="@drawable/ic_baseline_voice" />
+
+    <ToggleButton
+        android:id="@+id/tgbSearchBaike"
+        android:layout_width="50dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/tgb_bg_selector"
+        android:drawableBottom="@drawable/tgb_bottom_selecor"
+        android:text="ToggleButton"
+        android:textOff="百科"
+        android:textOn="百科"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
