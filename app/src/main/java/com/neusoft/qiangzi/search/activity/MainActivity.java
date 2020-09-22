@@ -140,10 +140,7 @@ public class MainActivity extends AppCompatActivity {
                     repository.saveNewWord(s);
                 }
 
-                /* 打开百度汉语 */
-                Intent i = new Intent(MainActivity.this, WebSearchActivity.class);
-                i.putExtra("word", s);
-                startActivity(i);
+                startWebActivity(s);
                 searchView.clearFocus();
                 return false;
             }
@@ -195,15 +192,7 @@ public class MainActivity extends AppCompatActivity {
                         String w = tv.getChineseString();
                         /* 保存生字到数据库 */
 //                        repository.saveNewWord(w);
-                        /* 打开百度汉语 */
-                        Intent i = new Intent(MainActivity.this,WebSearchActivity.class);
-                        i.putExtra("word",w);
-                        if (tgbSearchBaike.isChecked()) {
-                            i.putExtra("type","baike");
-                        }else{
-                            i.putExtra("type","hanyu");
-                        }
-                        startActivity(i);
+                        startWebActivity(w);
                     }
                 });
                 if (tvVoiceHint.getVisibility() == View.VISIBLE) {
@@ -215,6 +204,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private void startWebActivity(String w) {
+        /* 打开百度汉语 */
+        Intent i = new Intent(MainActivity.this, WebSearchActivity.class);
+        i.putExtra("word",w);
+        if (tgbSearchBaike.isChecked()) {
+            i.putExtra("type","baike");
+        }else{
+            i.putExtra("type","hanyu");
+        }
+        startActivity(i);
+    }
 
     @Override
     protected void onDestroy() {
