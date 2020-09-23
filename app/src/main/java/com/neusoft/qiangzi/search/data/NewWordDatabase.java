@@ -11,18 +11,19 @@ import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 //singleton
-@Database(entities = {NewWord.class},version = 3,exportSchema = false)
+@Database(entities = {NewWord.class, KeyWord.class},version = 4,exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class NewWordDatabase extends RoomDatabase {
     private static NewWordDatabase instance = null;
     public abstract NewWordDao getNewWordDao();
+    public abstract KeyWordDao getKeyWordDao();
 
     static synchronized NewWordDatabase getInstance(Context context) {
         if(instance==null){
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     NewWordDatabase.class, "new_words")
 //                    .allowMainThreadQueries()
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_3_4)
                     .build();
         }
         return instance;
@@ -55,6 +56,17 @@ public abstract class NewWordDatabase extends RoomDatabase {
                     "SELECT chinese,pinyin,pinyin_en,counter,add_time FROM newword");
             database.execSQL("DROP TABLE newword");
             database.execSQL("ALTER TABLE newword_temp RENAME TO newword");
+        }
+    };
+    private static final Migration MIGRATION_3_4 = new Migration(3,4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE keyword (" +
+                    "id  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                    "type TEXT," +
+                    "keyword TEXT," +
+                    "counter INTEGER NOT NULL," +
+                    "update_time INTEGER)");
         }
     };
 }

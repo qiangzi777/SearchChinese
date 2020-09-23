@@ -15,6 +15,7 @@ import android.webkit.WebViewClient;
 
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
+import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -29,6 +30,8 @@ public class WebSearchActivity extends AppCompatActivity {
     NewWordRepository newWordRepository;
     String wordUrlString = "";
     String urlString; // = "https://www.bilibili.com/video/av753885718";
+    private boolean needsZuciMenu;
+    private NewWordRepository repository;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -62,6 +65,8 @@ public class WebSearchActivity extends AppCompatActivity {
 //        webSettings.setPluginState(WebSettings.PluginState.ON);
 //        webSettings.setAllowFileAccessFromFileURLs(true);
 
+        repository = new NewWordRepository(this);
+
         try {
             wordUrlString = URLEncoder.encode(word, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -69,10 +74,21 @@ public class WebSearchActivity extends AppCompatActivity {
             urlString = getString(R.string.BAIDU_HANYU_HOME_URL);
             wordUrlString = "";
         }
-        if (type.equals("baike")) {
+        if (type!=null && type.equals("baike")) {
             urlString = getString(R.string.BAIDU_BAIKE_ITEM_URL) + wordUrlString;
+            /* 保存到数据库 */
+            if(word != null && !word.isEmpty()){
+                repository.saveKeyWord(word, NewWordRepository.KEYWORD_TYPE.BAIKE);
+            }
         }else {
             urlString = getString(R.string.BAIDU_HANYU_ZICI_URL) + wordUrlString;
+            needsZuciMenu = true;
+            /* 保存到数据库 */
+            if(word != null && word.length()==1 && PinyinUtils.isChinese(word)){
+                repository.saveNewWord(word);
+            }else {
+                repository.saveKeyWord(word, NewWordRepository.KEYWORD_TYPE.ZUCI);
+            }
         }
 
         webView.loadUrl(urlString);
@@ -152,6 +168,8 @@ public class WebSearchActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.web_search_menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_goto_zuci);
+        menuItem.setVisible(needsZuciMenu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -163,6 +181,9 @@ public class WebSearchActivity extends AppCompatActivity {
                     webView.goBack();
                 }
                 else this.finish();
+                break;
+            case R.id.menu_goto_zuci:
+                webView.findAllAsync("组词");
                 break;
             case R.id.menu_refresh_web:
                 webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);

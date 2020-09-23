@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -23,6 +24,7 @@ import com.github.yoojia.anyversion.NotifyStyle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.baidu.BaiduOcr;
+import com.neusoft.qiangzi.search.data.KeyWord;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
 import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 import com.neusoft.qiangzi.search.pinyin.SpellTextView;
@@ -30,12 +32,14 @@ import com.neusoft.qiangzi.search.view.WarpLinearLayout;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,6 +63,19 @@ public class MainActivity extends AppCompatActivity {
         baiduOcr.init();
 
         repository = new NewWordRepository(this);
+        repository.getAllKeyWords().observe(this, new Observer<List<KeyWord>>() {
+            @Override
+            public void onChanged(List<KeyWord> keyWords) {
+                resultLayout.removeAllViews();
+                for (int i = Math.min(keyWords.size()-1, 6); i>=0; i--) {
+                    appendKeywordView(keyWords.get(i).keyWord);
+                }
+                if (resultLayout.getChildCount() == 0) {
+                    tvVoiceHint.setVisibility(View.VISIBLE);
+                    resultLayout.addView(tvVoiceHint);
+                }
+            }
+        });
 
         //设置获取相机图片监听器
 //        baiduOcr.setOnGotImageListener(new BaiduOcr.OnShotImageListener() {
@@ -82,6 +99,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 recogStart();
+            }
+        });
+        tgbSearchBaike.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    repository.setKeyWordType(NewWordRepository.KEYWORD_TYPE.BAIKE);
+                }else {
+                    repository.setKeyWordType(NewWordRepository.KEYWORD_TYPE.ZUCI);
+                }
             }
         });
 
@@ -136,9 +163,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 /* 保存生字到数据库 */
-                if(s != null && s.length()==1 && PinyinUtils.isChinese(s)){
-                    repository.saveNewWord(s);
-                }
+//                if(s != null && s.length()==1 && PinyinUtils.isChinese(s)){
+//                    repository.saveNewWord(s);
+//                }
 
                 startWebActivity(s);
                 searchView.clearFocus();
@@ -159,6 +186,13 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.ItemAboutApp:
                 startActivity(new Intent(this, AboutActivity.class));
+                break;
+            case R.id.itemRemoveAllKeywords:
+                if (tgbSearchBaike.isChecked()) {
+                    repository.deleteKeyWordsByType(NewWordRepository.KEYWORD_TYPE.BAIKE);
+                } else {
+                    repository.deleteKeyWordsByType(NewWordRepository.KEYWORD_TYPE.ZUCI);
+                }
                 break;
             default:break;
         }
@@ -183,27 +217,31 @@ public class MainActivity extends AppCompatActivity {
                 if (word.endsWith("，") || word.endsWith(",") || word.endsWith("。") || word.endsWith(".")) {
                     word = word.substring(0, word.length() - 1);
                 }
-                View tv = PinyinUtils.getPinyinView(MainActivity.this,word);
-                tv.requestFocus();
-                tv.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        SpellTextView tv = (SpellTextView)view;
-                        String w = tv.getChineseString();
-                        /* 保存生字到数据库 */
-//                        repository.saveNewWord(w);
-                        startWebActivity(w);
-                    }
-                });
-                if (tvVoiceHint.getVisibility() == View.VISIBLE) {
-                    tvVoiceHint.setVisibility(View.INVISIBLE);
-                    resultLayout.removeView(tvVoiceHint);
-                }
-                if(resultLayout.getChildCount()>6)resultLayout.removeViewAt(0);
-                resultLayout.addView(tv);
+                appendKeywordView(word);
             }
         }
     };
+
+    private void appendKeywordView(String word) {
+        View tv = PinyinUtils.getPinyinView(MainActivity.this,word);
+        tv.requestFocus();
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SpellTextView tv = (SpellTextView)view;
+                String w = tv.getChineseString();
+                /* 保存生字到数据库 */
+//                        repository.saveNewWord(w);
+                startWebActivity(w);
+            }
+        });
+        if (tvVoiceHint.getVisibility() == View.VISIBLE) {
+            tvVoiceHint.setVisibility(View.INVISIBLE);
+            resultLayout.removeView(tvVoiceHint);
+        }
+        if(resultLayout.getChildCount()>6)resultLayout.removeViewAt(0);
+        resultLayout.addView(tv);
+    }
 
     private void startWebActivity(String w) {
         /* 打开百度汉语 */

@@ -95,7 +95,7 @@ public class ChineseResultActivity extends AppCompatActivity {
                                 SpellTextView tv = (SpellTextView)view;
                                 String w = tv.getChineseString();
                                 /* 保存生字到数据库 */
-                                repository.saveNewWord(w);
+                                //repository.saveNewWord(w);
 
                                 /* 打开百度汉语 */
                                 Intent i = new Intent(ChineseResultActivity.this,WebSearchActivity.class);

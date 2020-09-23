@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.neusoft.qiangzi.search.pinyin.PinyinUtils;
 
+import java.util.Date;
 import java.util.List;
 
 import androidx.arch.core.util.Function;
@@ -23,17 +24,25 @@ public class NewWordRepository {
         ORDER_BY_COUNTER_ASC,
         ORDER_BY_COUNTER_DESC,
     }
+    public enum KEYWORD_TYPE{
+        ZUCI,
+        BAIKE,
+    }
     private static final String TAG = "NewWordRepository";
     private NewWordDao newWordDao;
+    private KeyWordDao keyWordDao;
     private LiveData<List<NewWord>> allNewWords;
     private LiveData<List<NewWord>> searchByNewWords;
     private NewWord filterNewWord;
     private MutableLiveData<NewWord> filterLiveData;
     private MutableLiveData<ORDER_TYPE> filterOrderType;
+    private LiveData<List<KeyWord>> allKeyWords;
+    private MutableLiveData<String> keyWordType;
 
     public NewWordRepository(Context context) {
         NewWordDatabase database = NewWordDatabase.getInstance(context);
         newWordDao = database.getNewWordDao();
+        keyWordDao = database.getKeyWordDao();
         filterOrderType = new MutableLiveData<>();
         allNewWords = Transformations.switchMap(filterOrderType,
                 new Function<ORDER_TYPE, LiveData<List<NewWord>>>() {
@@ -65,6 +74,19 @@ public class NewWordRepository {
                         return newWordDao.searchByWordLiveData(v.chinese, v.pinyin);
                     }
                 });
+        keyWordType = new MutableLiveData<>("zuci");
+        allKeyWords = Transformations.switchMap(keyWordType,
+                new Function<String, LiveData<List<KeyWord>>>() {
+                    @Override
+                    public LiveData<List<KeyWord>> apply(String input) {
+                        if(input.equals("baike"))
+                            return keyWordDao.getAllBaikeDesc();
+                        else if(input.equals("zuci"))
+                            return keyWordDao.getAllZuciDesc();
+                        else
+                            return keyWordDao.getAllZuciDesc();
+                    }
+                });
     }
 
     LiveData<List<NewWord>> getAllNewWords() {
@@ -83,7 +105,27 @@ public class NewWordRepository {
         new DeleteNewWordsAsyncTask(newWordDao).execute(words);
     }
 
+    void deleteKeyWords(KeyWord... words){
+        new DeleteKeyWordsAsyncTask(keyWordDao).execute(words);
+    }
+
+    public void deleteKeyWordsByType(KEYWORD_TYPE type){
+        switch (type) {
+
+            case ZUCI:
+                new DeleteKeyWordsByTypeAsyncTask(keyWordDao).execute("zuci");
+                break;
+            case BAIKE:
+                new DeleteKeyWordsByTypeAsyncTask(keyWordDao).execute("baike");
+                break;
+        }
+
+    }
     void deleteAllNewWords(){
+        new DeleteAllNewWordsAsyncTask(newWordDao).execute();
+    }
+
+    void deleteAllKeyWords(){
         new DeleteAllNewWordsAsyncTask(newWordDao).execute();
     }
 
@@ -110,9 +152,36 @@ public class NewWordRepository {
         filterLiveData.setValue(filterNewWord);
     }
 
+    public void setKeyWordType(KEYWORD_TYPE type) {
+        switch (type) {
+            case ZUCI:
+                keyWordType.setValue("zuci");
+                break;
+            case BAIKE:
+                keyWordType.setValue("baike");
+                break;
+        }
+    }
+
+    public LiveData<List<KeyWord>> getAllKeyWords() {
+        return allKeyWords;
+    }
+
     public void saveNewWord(String chinese){
         new SaveNewWordAsyncTask(newWordDao).execute(chinese);
     }
+
+    public void saveKeyWord(String keyword, KEYWORD_TYPE type) {
+        switch (type) {
+            case ZUCI:
+                new SaveKeyWordAsyncTask(keyWordDao).execute(keyword, "zuci");
+                break;
+            case BAIKE:
+                new SaveKeyWordAsyncTask(keyWordDao).execute(keyword, "baike");
+                break;
+        }
+    }
+
     public void appendZuci(String chinese, String zuci){
         new appendZuciAsyncTask(newWordDao).execute(chinese, zuci);
     }
@@ -159,6 +228,20 @@ public class NewWordRepository {
         }
     }
 
+    static class DeleteKeyWordsAsyncTask extends AsyncTask<KeyWord,Void,Void>{
+        private KeyWordDao keyWordDao;
+
+        DeleteKeyWordsAsyncTask(KeyWordDao keyWordDao) {
+            this.keyWordDao = keyWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(KeyWord... words) {
+            this.keyWordDao.delete(words);
+            return null;
+        }
+    }
+
     static class DeleteAllNewWordsAsyncTask extends AsyncTask<Void,Void,Void>{
         private NewWordDao newWordDao;
 
@@ -172,7 +255,33 @@ public class NewWordRepository {
             return null;
         }
     }
+    static class DeleteAllKeyWordsAsyncTask extends AsyncTask<Void,Void,Void>{
+        private KeyWordDao keyWordDao;
 
+        DeleteAllKeyWordsAsyncTask(KeyWordDao keyWordDao) {
+            this.keyWordDao = keyWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... v) {
+            this.keyWordDao.deleteAll();
+            return null;
+        }
+    }
+    static class DeleteKeyWordsByTypeAsyncTask extends AsyncTask<String,Void,Void>{
+        private KeyWordDao keyWordDao;
+
+        DeleteKeyWordsByTypeAsyncTask(KeyWordDao keyWordDao) {
+            this.keyWordDao = keyWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(String... v) {
+            String type = v[0];
+            this.keyWordDao.deleteByType(type);
+            return null;
+        }
+    }
     static class SaveNewWordAsyncTask extends AsyncTask<String,Void,Void>{
         private NewWordDao newWordDao;
 
@@ -195,6 +304,32 @@ public class NewWordRepository {
                 newWordDao.update(newWord);
             }
             Log.d(TAG, "SaveNewWordAsyncTask:doInBackground: word="+newWord.toString());
+            return null;
+        }
+    }
+    static class SaveKeyWordAsyncTask extends AsyncTask<String,Void,Void>{
+        private KeyWordDao keyWordDao;
+
+        SaveKeyWordAsyncTask(KeyWordDao keyWordDao) {
+            this.keyWordDao = keyWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(String... str) {
+            String keyword = str[0];
+            String type = str[1];
+            KeyWord keyWord = keyWordDao.findByKeyword(keyword, type);
+            if(keyWord == null){
+                keyWord = new KeyWord();
+                keyWord.keyWord = keyword;
+                keyWord.type = type;
+                keyWordDao.insert(keyWord);
+            }else{
+                keyWord.counter++;
+                keyWord.updateTime =  new Date(System.currentTimeMillis());
+                keyWordDao.update(keyWord);
+            }
+            Log.d(TAG, "SaveKeyWordAsyncTask:doInBackground: word="+keyWord.toString());
             return null;
         }
     }

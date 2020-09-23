@@ -9,6 +9,9 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
     <item
+        android:id="@+id/itemRemoveAllKeywords"
+        android:title="清空搜索词" />
+    <item
         android:id="@+id/ItemAboutApp"
         android:title="@string/aboutAppActivityTitle" />
 </menu>
