@@ -101,17 +101,16 @@ public class NewWordRepository {
         new UpdateNewWordsAsyncTask(newWordDao).execute(words);
     }
 
-    void deleteNewWords(NewWord... words){
+    public void deleteNewWords(NewWord... words){
         new DeleteNewWordsAsyncTask(newWordDao).execute(words);
     }
 
-    void deleteKeyWords(KeyWord... words){
+    public void deleteKeyWords(KeyWord... words){
         new DeleteKeyWordsAsyncTask(keyWordDao).execute(words);
     }
 
     public void deleteKeyWordsByType(KEYWORD_TYPE type){
         switch (type) {
-
             case ZUCI:
                 new DeleteKeyWordsByTypeAsyncTask(keyWordDao).execute("zuci");
                 break;
@@ -119,13 +118,22 @@ public class NewWordRepository {
                 new DeleteKeyWordsByTypeAsyncTask(keyWordDao).execute("baike");
                 break;
         }
-
     }
-    void deleteAllNewWords(){
+    public void deleteKeyWordBy(String keyword, KEYWORD_TYPE type){
+        switch (type) {
+            case ZUCI:
+                new DeleteKeyWordsByAsyncTask(keyWordDao).execute(keyword, "zuci");
+                break;
+            case BAIKE:
+                new DeleteKeyWordsByAsyncTask(keyWordDao).execute(keyword, "baike");
+                break;
+        }
+    }
+    public void deleteAllNewWords(){
         new DeleteAllNewWordsAsyncTask(newWordDao).execute();
     }
 
-    void deleteAllKeyWords(){
+    public void deleteAllKeyWords(){
         new DeleteAllNewWordsAsyncTask(newWordDao).execute();
     }
 
@@ -279,6 +287,21 @@ public class NewWordRepository {
         protected Void doInBackground(String... v) {
             String type = v[0];
             this.keyWordDao.deleteByType(type);
+            return null;
+        }
+    }
+    static class DeleteKeyWordsByAsyncTask extends AsyncTask<String,Void,Void>{
+        private KeyWordDao keyWordDao;
+
+        DeleteKeyWordsByAsyncTask(KeyWordDao keyWordDao) {
+            this.keyWordDao = keyWordDao;
+        }
+
+        @Override
+        protected Void doInBackground(String... v) {
+            String keyword = v[0];
+            String type = v[1];
+            this.keyWordDao.deleteByKeywordAndType(keyword, type);
             return null;
         }
     }

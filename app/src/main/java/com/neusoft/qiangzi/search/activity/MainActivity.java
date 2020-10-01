@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,13 +46,15 @@ import androidx.lifecycle.Observer;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private static final int MAX_KEYWORDS_NUMBER = 20;
     private BaiduOcr baiduOcr;
     private NewWordRepository repository;
-    private FloatingActionButton fabVoice;
     private WarpLinearLayout resultLayout;
     private TextView tvVoiceHint;
     private ToggleButton tgbSearchBaike;
-    protected MyRecognizer mRecognizer;//语音识别对象
+    private MyRecognizer mRecognizer;//语音识别对象
+    private Vibrator vibrator;
+    private SpellTextView selectedKeywordView;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -67,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<KeyWord> keyWords) {
                 resultLayout.removeAllViews();
-                for (int i = Math.min(keyWords.size()-1, 6); i>=0; i--) {
+                for (int i = Math.min(keyWords.size()-1, MAX_KEYWORDS_NUMBER-1); i>=0; i--) {
                     appendKeywordView(keyWords.get(i).keyWord);
                 }
                 if (resultLayout.getChildCount() == 0) {
@@ -93,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
 
         resultLayout = findViewById(R.id.resultLayout);
         tvVoiceHint = findViewById(R.id.tvVoiceHint);
-        fabVoice = findViewById(R.id.fabVoice);
         tgbSearchBaike = findViewById(R.id.tgbSearchBaike);
+        FloatingActionButton fabVoice = findViewById(R.id.fabVoice);
         fabVoice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         initPermission();//动态权限
+        vibrator = (Vibrator)this.getSystemService(VIBRATOR_SERVICE);
 
         // 检查版本，弹出悬浮窗
         AnyVersion version = AnyVersion.getInstance(this);
@@ -156,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_page_menu, menu);
+        getMenuInflater().inflate(R.menu.main_page_option_menu, menu);
         MenuItem menuItem = menu.findItem(R.id.menu_main_page_search);//在菜单中找到对应控件的item
         final SearchView searchView = (SearchView) menuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -184,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.ItemAboutApp:
+            case R.id.itemAboutApp:
                 startActivity(new Intent(this, AboutActivity.class));
                 break;
             case R.id.itemRemoveAllKeywords:
@@ -199,9 +204,33 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        getMenuInflater().inflate(R.menu.main_page_context_menu,menu);
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.itemDeleteSelectedKeyword:
+                repository.deleteKeyWordBy(selectedKeywordView.getChineseString(),
+                        tgbSearchBaike.isChecked()? NewWordRepository.KEYWORD_TYPE.BAIKE: NewWordRepository.KEYWORD_TYPE.ZUCI);
+                break;
+            case R.id.itemClearAllKeywords:
+                if (tgbSearchBaike.isChecked()) {
+                    repository.deleteKeyWordsByType(NewWordRepository.KEYWORD_TYPE.BAIKE);
+                } else {
+                    repository.deleteKeyWordsByType(NewWordRepository.KEYWORD_TYPE.ZUCI);
+                }
+                break;
+        }
+        return super.onContextItemSelected(item);
+    }
+
     protected void recogStart() {
         // DEMO集成步骤2.1 拼接识别参数： 此处params可以打印出来，直接写到你的代码里去，最终的json一致即可。
-        final Map<String, Object> params = new LinkedHashMap<String, Object>();
+        final Map<String, Object> params = new LinkedHashMap<>();
         // 基于SDK集成2.1 设置识别参数
         params.put(SpeechConstant.ACCEPT_AUDIO_VOLUME, false);
         // params 也可以根据文档此处手动修改，参数会以json的格式在界面和logcat日志中打印
@@ -235,11 +264,21 @@ public class MainActivity extends AppCompatActivity {
                 startWebActivity(w);
             }
         });
+        tv.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                view.requestFocus();
+                selectedKeywordView = (SpellTextView) view;
+                if(vibrator!=null)vibrator.vibrate(100);
+                MainActivity.this.registerForContextMenu(view);
+                return false;
+            }
+        });
         if (tvVoiceHint.getVisibility() == View.VISIBLE) {
             tvVoiceHint.setVisibility(View.INVISIBLE);
             resultLayout.removeView(tvVoiceHint);
         }
-        if(resultLayout.getChildCount()>6)resultLayout.removeViewAt(0);
+        if(resultLayout.getChildCount()>= MAX_KEYWORDS_NUMBER)resultLayout.removeViewAt(0);
         resultLayout.addView(tv);
     }
 

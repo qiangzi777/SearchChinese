@@ -30,6 +30,7 @@
     <string name="search_bar_menu_title">Search</string>
     <string name="menu_open_in_browser_text">从浏览器打开</string>
     <string name="copyright_text">©2020 强子 All rights reserved.</string>
+    <string name="copyright_short_text">©2020 by强子</string>
     <string name="aboutAppActivityTitle">关于</string>
     <string name="intention_text">帮助孩子们提高学习效率，快快完成学习任务，多多去户外运动！多多享受童年的快乐吧！</string>
     <string name="app_description_text">使用摄像头扫描查生字；\n语音朗读、释义、组词；\n生字本可以收藏查过的生字；\n通过语音识别查字、词、成语；\n查询范围扩展百度百科知识。</string>

@@ -10,8 +10,9 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/itemRemoveAllKeywords"
-        android:title="清空搜索词" />
+        android:title="清空搜索词"
+        android:visible="false" />
     <item
-        android:id="@+id/ItemAboutApp"
+        android:id="@+id/itemAboutApp"
         android:title="@string/aboutAppActivityTitle" />
 </menu>

@@ -23,7 +23,8 @@ public abstract class NewWordDatabase extends RoomDatabase {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     NewWordDatabase.class, "new_words")
 //                    .allowMainThreadQueries()
-                    .addMigrations(MIGRATION_3_4)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+//                    .fallbackToDestructiveMigration()//数据库更新时删除数据重新创建
                     .build();
         }
         return instance;
