@@ -1,6 +1,7 @@
 package com.neusoft.qiangzi.search.activity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,10 +9,15 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 import com.neusoft.qiangzi.search.R;
 import com.neusoft.qiangzi.search.data.NewWordRepository;
@@ -26,14 +32,16 @@ import androidx.appcompat.app.AppCompatActivity;
 public class WebSearchActivity extends AppCompatActivity {
 
     private static final String TAG = "WebSearchActivity";
-    WebView webView;
-    NewWordRepository newWordRepository;
-    String wordUrlString = "";
-    String urlString; // = "https://www.bilibili.com/video/av753885718";
+    private WebView webView;
+    private NewWordRepository newWordRepository;
+    private String urlString; // = "https://www.bilibili.com/video/av753885718";
     private boolean needsZuciMenu;
-    private NewWordRepository repository;
+    /** 视频全屏参数 */
+    protected static final FrameLayout.LayoutParams COVER_SCREEN_PARAMS = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    private View customView;
+    private FrameLayout fullscreenContainer;
+    private WebChromeClient.CustomViewCallback customViewCallback;
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,25 +56,10 @@ public class WebSearchActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String word = intent.getStringExtra("word");
         String type = intent.getStringExtra("type");
-        webView = findViewById(R.id.webView);
-        webView.setWebViewClient(new MyWebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setSupportZoom(true);
-        webSettings.setLoadsImagesAutomatically(true);// 设置可以自动加载图片
-        webSettings.setAllowFileAccess(true);// 可以读取文件缓存(manifest生效)
-        webSettings.setAppCacheEnabled(true);// 应用可以有缓存
-        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        webSettings.setDomStorageEnabled(true);
-//        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-//        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-//        webSettings.setPluginState(WebSettings.PluginState.ON);
-//        webSettings.setAllowFileAccessFromFileURLs(true);
+        initWebView();
 
-        repository = new NewWordRepository(this);
-
+        NewWordRepository repository = new NewWordRepository(this);
+        String wordUrlString;
         try {
             wordUrlString = URLEncoder.encode(word, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -93,6 +86,41 @@ public class WebSearchActivity extends AppCompatActivity {
 
         webView.loadUrl(urlString);
         newWordRepository = new NewWordRepository(this);
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void initWebView() {
+        webView = findViewById(R.id.webView);
+        webView.setWebViewClient(new MyWebViewClient());
+        webView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public View getVideoLoadingProgressView() {
+                FrameLayout frameLayout = new FrameLayout(WebSearchActivity.this);
+                frameLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                return frameLayout;
+            }
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                showCustomView(view, callback);
+            }
+            @Override
+            public void onHideCustomView() {
+                hideCustomView();
+            }
+        });
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setSupportZoom(true);
+        webSettings.setLoadsImagesAutomatically(true);// 设置可以自动加载图片
+        webSettings.setAllowFileAccess(true);// 可以读取文件缓存(manifest生效)
+        webSettings.setAppCacheEnabled(true);// 应用可以有缓存
+        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webSettings.setDomStorageEnabled(true);
+//        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+//        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+//        webSettings.setPluginState(WebSettings.PluginState.ON);
+//        webSettings.setAllowFileAccessFromFileURLs(true);
     }
 
     /**
@@ -165,6 +193,55 @@ public class WebSearchActivity extends AppCompatActivity {
 //        }
     }
 
+    /** 视频播放全屏 **/
+    private void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+        // if a view already exists then immediately terminate the new one
+        if (customView != null) {
+            callback.onCustomViewHidden();
+            return;
+        }
+        getWindow().getDecorView();
+        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+        fullscreenContainer = new FullscreenHolder(this);
+        fullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
+        decor.addView(fullscreenContainer, COVER_SCREEN_PARAMS);
+        customView = view;
+        setStatusBarVisibility(false);
+        customViewCallback = callback;
+    }
+
+    /** 隐藏视频全屏 */
+    private void hideCustomView() {
+        if (customView == null) {
+            return;
+        }
+        setStatusBarVisibility(true);
+        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+        decor.removeView(fullscreenContainer);
+        fullscreenContainer = null;
+        customView = null;
+        customViewCallback.onCustomViewHidden();
+        webView.setVisibility(View.VISIBLE);
+    }
+
+    /** 全屏容器界面 **/
+    static class FullscreenHolder extends FrameLayout {
+        public FullscreenHolder(Context ctx) {
+            super(ctx);
+            setBackgroundColor(ctx.getResources().getColor(android.R.color.black));
+        }
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouchEvent(MotionEvent evt) {
+            return true;
+        }
+    }
+
+    private void setStatusBarVisibility(boolean visible) {
+        int flag = visible ? 0 : WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        getWindow().setFlags(flag, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.web_search_menu, menu);
@@ -199,9 +276,11 @@ public class WebSearchActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_BACK){
-            if(webView.canGoBack()) {
+            if (customView != null) {
+                hideCustomView();
+            } else if(webView.canGoBack()) {
                 webView.goBack();
             }
             else this.finish();

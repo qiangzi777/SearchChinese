@@ -27,7 +27,8 @@
         <activity android:name=".activity.NewWordListActivity" />
         <activity
             android:name=".activity.WebSearchActivity"
-            android:hardwareAccelerated="true" />
+            android:hardwareAccelerated="true"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
         <activity android:name=".activity.ChineseResultActivity" />
         <activity
             android:name=".activity.MainActivity"

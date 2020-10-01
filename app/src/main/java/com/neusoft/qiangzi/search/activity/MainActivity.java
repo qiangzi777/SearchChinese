@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(List<KeyWord> keyWords) {
                 resultLayout.removeAllViews();
                 for (int i = Math.min(keyWords.size()-1, MAX_KEYWORDS_NUMBER-1); i>=0; i--) {
-                    appendKeywordView(keyWords.get(i).keyWord);
+                    appendKeywordView(keyWords.get(i).keyword);
                 }
                 if (resultLayout.getChildCount() == 0) {
                     tvVoiceHint.setVisibility(View.VISIBLE);
@@ -214,8 +214,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.itemDeleteSelectedKeyword:
+                if(selectedKeywordView==null)break;
                 repository.deleteKeyWordBy(selectedKeywordView.getChineseString(),
-                        tgbSearchBaike.isChecked()? NewWordRepository.KEYWORD_TYPE.BAIKE: NewWordRepository.KEYWORD_TYPE.ZUCI);
+                        tgbSearchBaike.isChecked() ? NewWordRepository.KEYWORD_TYPE.BAIKE : NewWordRepository.KEYWORD_TYPE.ZUCI);
+                resultLayout.removeView(selectedKeywordView);
                 break;
             case R.id.itemClearAllKeywords:
                 if (tgbSearchBaike.isChecked()) {

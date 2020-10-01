@@ -33,9 +33,9 @@ public interface KeyWordDao {
     @Query("DELETE FROM keyword WHERE type=:type")
     void deleteByType(String type);
 
-    @Query("DELETE FROM keyword WHERE keyWord=:keyword AND type=:type")
+    @Query("DELETE FROM keyword WHERE keyword=:keyword AND type=:type")
     void deleteByKeywordAndType(String keyword, String type);
 
-    @Query("SELECT * FROM keyword WHERE keyWord=:word AND type=:type LIMIT 1")
+    @Query("SELECT * FROM keyword WHERE keyword=:word AND type=:type LIMIT 1")
     KeyWord findByKeyword(String word, String type);
 }

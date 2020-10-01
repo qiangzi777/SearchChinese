@@ -11,7 +11,7 @@ public class KeyWord {
     @PrimaryKey(autoGenerate = true)
     public int id;
     @ColumnInfo
-    public String keyWord;
+    public String keyword;
     @ColumnInfo
     public String type;
     @ColumnInfo

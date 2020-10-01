@@ -134,7 +134,7 @@ public class NewWordRepository {
     }
 
     public void deleteAllKeyWords(){
-        new DeleteAllNewWordsAsyncTask(newWordDao).execute();
+        new DeleteAllKeyWordsAsyncTask(keyWordDao).execute();
     }
 
     LiveData<List<NewWord>> searchBy(){
@@ -344,7 +344,7 @@ public class NewWordRepository {
             KeyWord keyWord = keyWordDao.findByKeyword(keyword, type);
             if(keyWord == null){
                 keyWord = new KeyWord();
-                keyWord.keyWord = keyword;
+                keyWord.keyword = keyword;
                 keyWord.type = type;
                 keyWordDao.insert(keyWord);
             }else{
